@@ -1,0 +1,27 @@
+rockefeller-finance/
+├── src/
+│   ├── assets/                 # Chứa hình ảnh, biểu tượng
+│   ├── components/             # Các thành phần giao diện có thể tái sử dụng
+│   │   ├── Dashboard.js
+│   │   ├── ExpenseTracker.js
+│   │   ├── BudgetPlanner.js
+│   │   ├── InvestmentTracker.js
+│   │   ├── FinancialGoals.js
+│   │   ├── Reports.js
+│   │   ├── Navbar.js
+│   │   └── Sidebar.js
+│   ├── contexts/               # Quản lý trạng thái toàn cục
+│   │   └── FinanceContext.js
+│   ├── pages/                  # Các trang giao diện
+│   │   ├── Home.js
+│   │   ├── Expenses.js         sẽ import ExpenseTracker sau kiểm tra lại nếu chưa import thì thêm vào nếu rồi thì xóa dòng này
+│   │   ├── Budget.js
+│   │   ├── Investments.js
+│   │   ├── Goals.js
+│   │   └── ReportsPage.js
+│   ├── App.js                  # File chính với định tuyến
+│   ├── index.js                # Điểm vào của ứng dụng
+│   └── index.css               # File CSS Tailwind
+├── public/
+├── package.json
+└── tailwind.config.js
