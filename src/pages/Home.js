@@ -330,7 +330,7 @@ function Home() {
       {/* Mobile Topbar */}
       <header className="sticky top-0 z-40 bg-opacity-80 backdrop-blur-md shadow-sm">
         <div className="flex items-center justify-between px-4 py-3 md:py-4 max-w-4xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2 font-quicksand">
             <svg width="28" height="28" viewBox="0 0 32 32" aria-label="dashboard" fill="none">
               <circle cx="16" cy="16" r="14" fill="#2563eb" fillOpacity="0.12"/>
               <circle cx="16" cy="16" r="14" stroke="#2563eb" strokeWidth="2"/>
@@ -379,7 +379,7 @@ function Home() {
           <>
             {/* Financial Quote */}
             <div className="mb-6 p-4 rounded-xl shadow bg-gradient-to-r from-blue-200 via-blue-100 to-blue-50 text-blue-900 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800">
-              <p className="italic text-center text-base md:text-lg font-medium">
+              <p className="italic text-center text-base md:text-lg font-medium font-quicksand">
                 <span className="font-bold text-blue-600 dark:text-blue-300">*32 Lá Thư*:</span> "Kỷ luật tài chính bắt đầu từ việc theo dõi chi tiêu hàng ngày. Hãy kiểm tra ngân sách của bạn thường xuyên!"
               </p>
             </div>
