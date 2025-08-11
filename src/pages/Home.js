@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import numberToWords from '../utils/numberToWords';
+import '../styles/pages/Home.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -369,10 +370,10 @@ function Home() {
           </div>
         )}
         {error && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow animate-fade-in">{error}</div>
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow animate-fade-in  font-quicksand">{error}</div>
         )}
         {successMessage && (
-          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg shadow animate-fade-in">{successMessage}</div>
+          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg shadow animate-fade-in font-quicksand">{successMessage}</div>
         )}
 
         {!isLoading && (
@@ -385,7 +386,7 @@ function Home() {
             </div>
 
             {/* Overview Cards */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 font-quicksand">
               <div className={`p-5 rounded-2xl shadow-lg col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col items-center justify-center bg-gradient-to-br ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-blue-100 via-white to-blue-50'} transition`}>
                 <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
                   <svg width="24" height="24" viewBox="0 0 24 24" aria-label="balance" fill="none">
@@ -411,8 +412,8 @@ function Home() {
             </section>
 
             {/* Chart */}
-            <section className="mb-8">
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <section className="mb-8  font-quicksand">
+              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 ">
                 <svg width="22" height="22" viewBox="0 0 24 24" aria-label="chart" fill="none">
                   <circle cx="12" cy="12" r="10" fill="#2563eb" fillOpacity="0.10"/>
                   <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="2"/>
@@ -420,11 +421,11 @@ function Home() {
                 </svg>
                 Phân tích chi tiêu gần đây
               </h3>
-              <div className={`p-4 rounded-2xl shadow-lg bg-gradient-to-br ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} transition`}>
+              <div className={`p-4 rounded-2xl shadow-lg bg-gradient-to-br font-quicksand ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} transition`}>
                 {recentTransactionsForChart.length > 0 ? (
                   <div className="relative" style={{ height: '260px', minHeight: '200px' }}>
                     <Doughnut data={chartData} options={chartOptions} />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none font-quicksand">
                       <span className="text-xs text-gray-500 dark:text-gray-300">Tổng</span>
                       <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{formatVND(
                         recentTransactionsForChart.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0)
@@ -438,8 +439,8 @@ function Home() {
             </section>
 
             {/* Filters */}
-            <section className="mb-6 relative">
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <section className="mb-6 relative font-quicksand">
+              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 font-quicksand">
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-label="filter" fill="none">
                   <rect x="4" y="4" width="16" height="16" rx="4" fill="#2563eb" fillOpacity="0.10"/>
                   <rect x="4" y="4" width="16" height="16" rx="4" stroke="#2563eb" strokeWidth="2"/>
@@ -561,7 +562,7 @@ function Home() {
 
             {/* Transactions */}
             <section>
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 font-quicksand">
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-label="transactions" fill="none">
                   <rect x="4" y="4" width="16" height="16" rx="4" fill="#2563eb" fillOpacity="0.10"/>
                   <rect x="4" y="4" width="16" height="16" rx="4" stroke="#2563eb" strokeWidth="2"/>
@@ -579,7 +580,7 @@ function Home() {
                     const dateB = new Date(yearB, new Date(Date.parse(monthB + " 1, 2000")).getMonth());
                     return dateB - dateA;
                   }).map((monthYear) => (
-                    <div key={monthYear} className="mb-4">
+                    <div key={monthYear} className="mb-4 font-quicksand">
                       <button
                         onClick={() => toggleMonth(monthYear)}
                         className={`w-full flex justify-between items-center p-3 rounded-lg text-left font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-100 hover:bg-blue-200'}`}
@@ -634,7 +635,7 @@ function Home() {
                     </div>
                   ))}
                   {/* Pagination */}
-                  <div className="flex flex-wrap justify-center gap-2 mt-6">
+                  <div className="flex flex-wrap justify-center gap-2 mt-6  font-quicksand">
                     <button
                       onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
@@ -653,7 +654,7 @@ function Home() {
                   </div>
                 </>
               ) : (
-                <div className="p-4 bg-yellow-100 text-yellow-700 rounded-xl shadow text-center animate-fade-in">
+                <div className="p-4 bg-yellow-100 text-yellow-700 rounded-xl shadow text-center animate-fade-in  font-quicksand">
                   Không tìm thấy giao dịch phù hợp với bộ lọc.
                 </div>
               )}
