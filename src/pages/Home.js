@@ -6,7 +6,11 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import numberToWords from '../utils/numberToWords';
 import '../styles/pages/Home.css';
 
+
+
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+
 
 const CategoryIcons = {
   essentials: (
@@ -153,6 +157,9 @@ function Home() {
     fetchData();
     // eslint-disable-next-line
   }, [token, navigate]);
+
+
+
 
   useEffect(() => {
     if (isDarkMode) {
@@ -675,6 +682,7 @@ function Home() {
           </svg>
         </button>
       )}
+   
       {/* 
         Đã chuyển overlay và advanced filter thành fixed, 
         overlay không làm mờ advanced filter nữa.
