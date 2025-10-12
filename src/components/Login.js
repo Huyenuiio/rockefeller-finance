@@ -103,7 +103,7 @@ function Login() {
         </div>
         <div className="mb-6 p-4 rounded bg-blue-100 text-blue-800">
           <p className="italic">
-            *32 Lá Thư*: "Kỷ luật tài chính bắt đầu từ việc quản lý thông tin cá nhân an toàn. Hãy sử dụng mật khẩu mạnh!"
+            *38 Lá Thư*: "Kỷ luật tài chính bắt đầu từ việc quản lý thông tin cá nhân an toàn. Hãy sử dụng mật khẩu mạnh!"
           </p>
         </div>
         <div className="flex mb-6">

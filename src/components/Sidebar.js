@@ -254,7 +254,7 @@ const Sidebar = memo(() => {
             <p className="text-xs italic flex items-center gap-1.5">
               <AlertCircle size={15} className="text-blue-400" />
               <span>
-                <span className="font-bold text-blue-600">32 Lá Thư</span>: "Điều hướng thông minh, lập kế hoạch tài chính hiệu quả."
+                <span className="font-bold text-blue-600">38 Lá Thư</span>: "Điều hướng thông minh, lập kế hoạch tài chính hiệu quả."
               </span>
             </p>
           </div>
