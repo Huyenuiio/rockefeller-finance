@@ -65,6 +65,13 @@ const categories = [
   },
 ];
 
+// Tạo state khởi tạo cho visibility
+const initialVisibilityState = categories.reduce((acc, category) => {
+    acc[category.value] = false;
+    return acc;
+}, { budgetBalance: false, totalAllocations: false });
+
+
 function Expenses() {
   // State
   const [amount, setAmount] = useState('');
@@ -90,8 +97,27 @@ function Expenses() {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [showAllExpenses, setShowAllExpenses] = useState(false); // For expanding/collapsing expense history
+  const [visibility, setVisibility] = useState(initialVisibilityState); // State ẩn/hiện
   const token = localStorage.getItem('token');
   const snackbarTimeout = useRef(null);
+  
+  // Hàm bật/tắt cho một phần tử cụ thể
+  const toggleVisibility = (key) => {
+    setVisibility(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Biến kiểm tra xem có mục nào đang hiển thị không
+  const isAnyAmountVisible = Object.values(visibility).some(v => v === true);
+
+  // Hàm bật/tắt tất cả
+  const toggleAllVisibility = () => {
+    const shouldShowAll = !isAnyAmountVisible;
+    const newState = Object.keys(visibility).reduce((acc, key) => {
+      acc[key] = shouldShowAll;
+      return acc;
+    }, {});
+    setVisibility(newState);
+  };
 
   // Theme sync (like Home.js)
   useEffect(() => {
@@ -103,6 +129,20 @@ function Expenses() {
       document.body.style.background = '#F3F4F6';
     }
   }, [isDarkMode]);
+
+  // Hàm quản lý hiển thị thông báo (snackbar)
+  const showNotification = (message) => {
+    setSnackbarMsg(message);
+    setShowSnackbar(true);
+
+    if (snackbarTimeout.current) {
+      clearTimeout(snackbarTimeout.current);
+    }
+
+    snackbarTimeout.current = setTimeout(() => {
+      setShowSnackbar(false);
+    }, 3000); // Tự động ẩn sau 3 giây
+  };
 
   // Fetch data
   useEffect(() => {
@@ -123,22 +163,13 @@ function Expenses() {
         setExpenses(expensesRes.data);
         setAllocations(allocationsRes.data);
       } catch (err) {
-        showError(err.response?.data?.error || 'Lỗi lấy dữ liệu');
+        setError(err.response?.data?.error || 'Lỗi lấy dữ liệu');
       }
     };
     if (token) fetchData();
     // eslint-disable-next-line
   }, [token]);
-
-  // Snackbar
-  const showError = (msg) => {
-    setError(msg);
-    setSnackbarMsg(msg);
-    setShowSnackbar(true);
-    if (snackbarTimeout.current) clearTimeout(snackbarTimeout.current);
-    snackbarTimeout.current = setTimeout(() => setShowSnackbar(false), 3500);
-  };
-
+  
   // Format currency
   const formatVND = (value) => {
     const num = parseFloat(value) || 0;
@@ -150,7 +181,7 @@ function Expenses() {
     e.preventDefault();
     const parsedBudget = parseFloat(newBudget);
     if (isNaN(parsedBudget) || parsedBudget <= 0) {
-      showError('Vui lòng nhập số tiền hợp lệ!');
+      showNotification('Vui lòng nhập số tiền hợp lệ!');
       return;
     }
     setIsSubmitting(true);
@@ -164,10 +195,9 @@ function Expenses() {
       setAllocations(response.data.allocations);
       setNewBudget('');
       setError('');
-      setSnackbarMsg('Ngân sách đã được cập nhật!');
-      setShowSnackbar(true);
+      showNotification('Ngân sách đã được cập nhật!');
     } catch (err) {
-      showError(err.response?.data?.error || 'Lỗi lưu ngân sách');
+      showNotification(err.response?.data?.error || 'Lỗi lưu ngân sách');
     } finally {
       setIsSubmitting(false);
     }
@@ -178,11 +208,11 @@ function Expenses() {
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      showError('Vui lòng nhập số tiền hợp lệ!');
+      showNotification('Vui lòng nhập số tiền hợp lệ!');
       return;
     }
     if (!purpose || !location) {
-      showError('Vui lòng nhập mục đích và vị trí!');
+      showNotification('Vui lòng nhập mục đích và vị trí!');
       return;
     }
     setIsSubmitting(true);
@@ -216,10 +246,9 @@ function Expenses() {
       setLocation('');
       setDate('');
       setError('');
-      setSnackbarMsg('Chi tiêu đã được thêm!');
-      setShowSnackbar(true);
+      showNotification('Chi tiêu đã được thêm!');
     } catch (err) {
-      showError(err.response?.data?.error || 'Lỗi thêm chi tiêu');
+      showNotification(err.response?.data?.error || 'Lỗi thêm chi tiêu');
     } finally {
       setIsSubmitting(false);
     }
@@ -244,10 +273,9 @@ function Expenses() {
       ]);
       setInitialBudget(budgetRes.data.initialBudget);
       setAllocations(allocRes.data);
-      setSnackbarMsg('Đã xóa chi tiêu!');
-      setShowSnackbar(true);
+      showNotification('Đã xóa chi tiêu!');
     } catch (err) {
-      showError(err.response?.data?.error || 'Lỗi xóa chi tiêu');
+      showNotification(err.response?.data?.error || 'Lỗi xóa chi tiêu');
     }
   };
 
@@ -256,20 +284,16 @@ function Expenses() {
 
   // Total allocations
   const totalAmount =
-    parseFloat(allocations.essentials) +
-    parseFloat(allocations.savings) +
-    parseFloat(allocations.selfInvestment) +
-    parseFloat(allocations.charity) +
-    parseFloat(allocations.emergency);
+    parseFloat(allocations.essentials || 0) +
+    parseFloat(allocations.savings || 0) +
+    parseFloat(allocations.selfInvestment || 0) +
+    parseFloat(allocations.charity || 0) +
+    parseFloat(allocations.emergency || 0);
 
-  // Expense history logic for step1 & step2
-  // Always show newest first
+  // Expense history logic
   const sortedExpenses = [...expenses].reverse();
-
-  // How many to show when collapsed
   const COLLAPSED_COUNT = 1;
 
-  // Responsive, modern, glassmorphism, and micro-interactions
   return (
     <div
       className={`min-h-screen transition-colors duration-300 overflow-x-hidden ${
@@ -288,8 +312,8 @@ function Expenses() {
         className={`fixed z-50 left-1/2 -translate-x-1/2 bottom-6 px-6 py-3 rounded-xl shadow-lg font-medium text-base transition-all duration-500
           ${
             showSnackbar
-              ? 'opacity-100 pointer-events-auto'
-              : 'opacity-0 pointer-events-none'
+              ? 'opacity-100 translate-y-0'
+              : 'opacity-0 translate-y-4 pointer-events-none'
           }
           ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}
         `}
@@ -361,10 +385,10 @@ function Expenses() {
       </header>
 
       <main className="max-w-3xl mx-auto px-1 sm:px-3 py-6" style={{width: '100%'}}>
-        {/* Error */}
-        {error && (
+        {/* Error - Chỉ hiển thị lỗi tải trang ban đầu */}
+        {error && !initialBudget && (
           <div className="mb-4">
-            <div className="flex items-center gap-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-4 py-2 rounded-lg shadow-sm animate-shake">
+            <div className="flex items-center gap-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-4 py-2 rounded-lg shadow-sm">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M12 9v2m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z" />
               </svg>
@@ -460,14 +484,27 @@ function Expenses() {
 
             {/* Budget balance */}
             <section className="mb-6">
-              <div className="glass-card p-4 rounded-2xl shadow-xl flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold mb-1">Số dư ngân sách</h2>
-                  <p className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 tracking-tight">
-                    {formatVND(initialBudget)}
-                  </p>
+              <div className="glass-card p-4 rounded-2xl shadow-xl">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold mb-1">Số dư ngân sách</h2>
+                    <button
+                        onClick={toggleAllVisibility}
+                        aria-label="Hiện/Ẩn tất cả số tiền"
+                        className={`p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ${isDarkMode ? 'focus:ring-offset-gray-800 focus:ring-blue-400' : 'focus:ring-offset-blue-100 focus:ring-blue-500'}`}
+                    >
+                        {isAnyAmountVisible ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                        )}
+                    </button>
                 </div>
-                <span className="text-3xl animate-pulse">💰</span>
+                <div className="cursor-pointer flex items-center justify-between" onClick={() => toggleVisibility('budgetBalance')}>
+                    <p className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 tracking-tight">
+                        {visibility.budgetBalance ? formatVND(initialBudget) : '******** VND'}
+                    </p>
+                    <span className="text-3xl animate-pulse">💰</span>
+                </div>
               </div>
             </section>
 
@@ -701,7 +738,8 @@ function Expenses() {
                   {categories.map((cat) => (
                     <div
                       key={cat.value}
-                      className={`rounded-xl p-3 shadow-md bg-gradient-to-br`}
+                      className={`rounded-xl p-3 shadow-md bg-gradient-to-br cursor-pointer`}
+                      onClick={() => toggleVisibility(cat.value)}
                       style={{
                         background: isDarkMode
                           ? `linear-gradient(135deg, ${cat.color}22 0%, #22223b 100%)`
@@ -711,11 +749,13 @@ function Expenses() {
                         wordBreak: 'break-word',
                       }}
                     >
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 pointer-events-none">
                         <span>{cat.icon}</span>
                         <span className="font-semibold">{cat.label}</span>
                       </div>
-                      <span className="text-xl font-bold">{formatVND(allocations[cat.value])}</span>
+                      <span className="text-xl font-bold">
+                        {visibility[cat.value] ? formatVND(allocations[cat.value] || 0) : '******** VND'}
+                      </span>
                     </div>
                   ))}
                 </section>
@@ -725,13 +765,16 @@ function Expenses() {
             {/* Total allocations */}
             {totalAmount > 0 && (
               <section className="mb-6">
-                <div className="glass-card p-4 rounded-2xl shadow-xl flex flex-col items-center">
-                  <h2 className="text-lg font-bold mb-1">Tổng số tiền phân bổ</h2>
+                <div 
+                    className="glass-card p-4 rounded-2xl shadow-xl flex flex-col items-center cursor-pointer"
+                    onClick={() => toggleVisibility('totalAllocations')}
+                >
+                  <h2 className="text-lg font-bold mb-1 pointer-events-none">Tổng số tiền phân bổ</h2>
                   <p className="text-2xl font-extrabold text-gray-700 dark:text-gray-200 mb-1">
-                    {formatVND(totalAmount)}
+                    {visibility.totalAllocations ? formatVND(totalAmount) : '******** VND'}
                   </p>
                   <p className="text-base italic text-gray-500 dark:text-gray-400">
-                    {numberToWords(totalAmount)}
+                    {visibility.totalAllocations ? numberToWords(totalAmount) : '********'}
                   </p>
                 </div>
               </section>
@@ -741,171 +784,666 @@ function Expenses() {
       </main>
 
       {/* Modern glassmorphism and utility classes */}
-      <style>{`
+   <style>{`
+
+
+
         .glass-card {
+
+
+
           background: rgba(255,255,255,1);
+
+
+
           backdrop-filter: blur(0px) saturate(1.1);
+
+
+
           border: 1.5px solid rgba(200,200,255,0.13);
+
+
+
         }
+
+
+
         .dark .glass-card {
+
+
+
           background: rgba(30,32,40,0.98);
+
+
+
           border: 1.5px solid rgba(80,80,120,0.18);
+
+
+
         }
+
+
+
         .input-modern {
+
+
+
           width: 100%;
+
+
+
           padding: 0.7rem 1rem;
+
+
+
           border-radius: 0.8rem;
+
+
+
           border: 1.5px solid #d1d5db;
+
+
+
           background: #fff;
+
+
+
           font-size: 1.05rem;
+
+
+
           font-weight: 500;
+
+
+
           color: #22223b;
+
+
+
           transition: border-color 0.2s, box-shadow 0.2s;
+
+
+
           outline: none;
+
+
+
           box-shadow: 0 1px 2px 0 rgba(59,130,246,0.04);
+
+
+
         }
+
+
+
         .input-modern:focus {
+
+
+
           border-color: #3b82f6;
+
+
+
           box-shadow: 0 0 0 2px #3b82f655;
+
+
+
         }
+
+
+
         .input-modern.dark {
+
+
+
           background: #23263a;
+
+
+
           color: #fff;
+
+
+
           border-color: #374151;
+
+
+
         }
+
+
+
         .btn-modern {
+
+
+
           display: inline-flex;
+
+
+
           align-items: center;
+
+
+
           justify-content: center;
+
+
+
           padding: 0.8rem 1.3rem;
+
+
+
           border-radius: 0.8rem;
+
+
+
           font-weight: 700;
+
+
+
           font-size: 1.05rem;
+
+
+
           background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+
+
+
           color: #fff;
+
+
+
           box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10);
+
+
+
           transition: background 0.2s, transform 0.1s;
+
+
+
         }
+
+
+
         .btn-modern:disabled {
+
+
+
           background: #a5b4fc;
+
+
+
           cursor: not-allowed;
+
+
+
         }
+
+
+
         .btn-modern:not(:disabled):hover {
+
+
+
           background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+
+
+
           transform: scale(1.03);
+
+
+
         }
+
+
+
         @media (max-width: 900px) {
+
+
+
           main, .glass-card { max-width: 100vw !important; }
+
+
+
         }
+
+
+
         @media (max-width: 640px) {
+
+
+
           .glass-card { padding: 1rem !important; }
+
+
+
           .input-modern, .btn-modern { font-size: 1.01rem; padding: 0.7rem 1rem; }
+
+
+
           .text-2xl, .text-3xl { font-size: 1.45rem !important; }
+
+
+
           .text-lg, .text-xl { font-size: 1.18rem !important; }
+
+
+
           .rounded-2xl { border-radius: 1.1rem !important; }
+
+
+
           .rounded-xl { border-radius: 0.8rem !important; }
+
+
+
           .p-4 { padding: 1rem !important; }
+
+
+
           .p-6 { padding: 1.2rem !important; }
+
+
+
           .mb-8 { margin-bottom: 1.3rem !important; }
+
+
+
           .mb-6 { margin-bottom: 1.1rem !important; }
+
+
+
           .max-w-3xl { max-width: 100vw !important; }
+
+
+
           .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+
+
           .glass-card, .input-modern, .btn-modern {
+
+
+
             box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10) !important;
+
+
+
           }
+
+
+
           /* Title nét căng */
+
+
+
           .app-title {
+
+
+
             font-size: 1.25rem !important;
+
+
+
             font-weight: 900 !important;
+
+
+
             letter-spacing: -0.01em !important;
+
+
+
             text-shadow: 0 1px 0 #fff, 0 0px 0 #000;
+
+
+
             color: #22223b !important;
+
+
+
             -webkit-font-smoothing: antialiased !important;
+
+
+
             text-rendering: geometricPrecision !important;
+
+
+
           }
+
+
+
           .dark .app-title {
+
+
+
             color: #fff !important;
+
+
+
             text-shadow: 0 1px 0 #23263a, 0 0px 0 #fff;
+
+
+
           }
+
+
+
           .app-title .title-text {
+
+
+
             font-size: 1.18rem !important;
+
+
+
             font-weight: 900 !important;
+
+
+
             letter-spacing: -0.01em !important;
+
+
+
             line-height: 1.1 !important;
+
+
+
           }
+
+
+
           /* Category select mobile style */
+
+
+
           .category-select-wrapper {
+
+
+
             position: relative;
+
+
+
             width: 100%;
+
+
+
           }
+
+
+
           .category-select {
+
+
+
             font-size: 1.08rem !important;
+
+
+
             font-weight: 600 !important;
+
+
+
             padding-right: 2.5rem !important;
+
+
+
             background: #f9fafb !important;
+
+
+
             border: 1.5px solid #d1d5db !important;
+
+
+
             color: #22223b !important;
+
+
+
             appearance: none;
+
+
+
             -webkit-appearance: none;
+
+
+
             border-radius: 0.8rem !important;
+
+
+
             min-height: 2.7rem !important;
+
+
+
           }
+
+
+
           .category-select.dark {
+
+
+
             background: #23263a !important;
+
+
+
             color: #fff !important;
+
+
+
             border: 1.5px solid #374151 !important;
+
+
+
           }
+
+
+
           .category-mobile-visual {
+
+
+
             display: flex;
+
+
+
             align-items: center;
+
+
+
             gap: 0.5rem;
+
+
+
             margin-top: 0.3rem;
+
+
+
             min-height: 1.5rem;
+
+
+
             font-size: 1.01rem;
+
+
+
             font-weight: 600;
+
+
+
           }
+
+
+
         }
+
+
+
         @media (max-width: 400px) {
+
+
+
           .glass-card { padding: 0.7rem !important; }
+
+
+
           .input-modern, .btn-modern { font-size: 0.98rem; padding: 0.6rem 0.8rem; }
+
+
+
           .app-title { font-size: 1.08rem !important; }
+
+
+
           .app-title .title-text { font-size: 1.01rem !important; }
+
+
+
         }
+
+
+
         .animate-shake {
+
+
+
           animation: shake 0.3s;
+
+
+
         }
+
+
+
         @keyframes shake {
+
+
+
           0% { transform: translateX(0); }
+
+
+
           20% { transform: translateX(-4px); }
+
+
+
           40% { transform: translateX(4px); }
+
+
+
           60% { transform: translateX(-2px); }
+
+
+
           80% { transform: translateX(2px); }
+
+
+
           100% { transform: translateX(0); }
+
+
+
         }
+
+
+
         /* Prevent horizontal scroll on mobile */
+
+
+
         html, body {
+
+
+
           max-width: 100vw;
+
+
+
           overflow-x: hidden;
+
+
+
         }
+
+
+
         /* Make everything crisp on mobile */
+
+
+
         @media (max-width: 640px) {
+
+
+
           body, .glass-card, .input-modern, .btn-modern, .rounded-xl, .rounded-2xl, .shadow-xl, .shadow, .shadow-md {
+
+
+
             filter: none !important;
+
+
+
             backdrop-filter: none !important;
+
+
+
             background-blur: none !important;
+
+
+
             -webkit-filter: none !important;
+
+
+
             -webkit-backdrop-filter: none !important;
+
+
+
             box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10) !important;
+
+
+
           }
+
+
+
           .glass-card {
+
+
+
             background: #fff !important;
+
+
+
             border: 1.5px solid #e5e7eb !important;
+
+
+
           }
+
+
+
           .dark .glass-card {
+
+
+
             background: #23263a !important;
+
+
+
             border: 1.5px solid #374151 !important;
+
+
+
           }
+
+
+
         }
+
+
+
       `}</style>
     </div>
   );
