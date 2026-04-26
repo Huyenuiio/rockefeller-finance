@@ -60,8 +60,35 @@ export const FinanceProvider = ({ children }) => {
     return true;
   };
 
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => localStorage.getItem('darkMode') === 'true'
+  );
+
+  React.useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('darkMode', next);
+      return next;
+    });
+  };
+
   return (
-    <FinanceContext.Provider value={{ allocations, allocateFunds, deductFromCategory, transactionHistory }}>
+    <FinanceContext.Provider value={{
+      allocations,
+      allocateFunds,
+      deductFromCategory,
+      transactionHistory,
+      isDarkMode,
+      toggleDarkMode
+    }}>
       {children}
     </FinanceContext.Provider>
   );

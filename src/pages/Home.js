@@ -1,68 +1,23 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import AllocationHeader from '../components/Home/AllocationHeader';
+import AllocationChart from '../components/Home/AllocationChart';
+import TransactionFilters from '../components/Home/TransactionFilters';
+import TransactionHistoryList from '../components/Home/TransactionHistoryList';
+import { categories } from '../constants/categories';
+import { FinanceContext } from '../contexts/FinanceContext';
 import numberToWords from '../utils/numberToWords';
 import '../styles/pages/Home.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const CategoryIcons = {
-  essentials: (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-label="Tiêu dùng thiết yếu" fill="none">
-      <rect x="4" y="8" width="24" height="16" rx="4" fill="#10B981" fillOpacity="0.12"/>
-      <rect x="4" y="8" width="24" height="16" rx="4" stroke="#10B981" strokeWidth="2"/>
-      <path d="M10 16h12" stroke="#10B981" strokeWidth="2" strokeLinecap="round"/>
-      <circle cx="10" cy="20" r="1.5" fill="#10B981"/>
-      <circle cx="22" cy="20" r="1.5" fill="#10B981"/>
-    </svg>
-  ),
-  savings: (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-label="Tiết kiệm bắt buộc" fill="none">
-      <ellipse cx="16" cy="20" rx="8" ry="4" fill="#3B82F6" fillOpacity="0.12"/>
-      <ellipse cx="16" cy="20" rx="8" ry="4" stroke="#3B82F6" strokeWidth="2"/>
-      <rect x="10" y="8" width="12" height="8" rx="3" fill="#3B82F6" fillOpacity="0.12"/>
-      <rect x="10" y="8" width="12" height="8" rx="3" stroke="#3B82F6" strokeWidth="2"/>
-      <path d="M16 8v-2" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  ),
-  selfInvestment: (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-label="Đầu tư bản thân" fill="none">
-      <rect x="8" y="10" width="16" height="12" rx="3" fill="#F59E0B" fillOpacity="0.12"/>
-      <rect x="8" y="10" width="16" height="12" rx="3" stroke="#F59E0B" strokeWidth="2"/>
-      <path d="M12 14h8M12 18h5" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
-      <circle cx="16" cy="22" r="1.5" fill="#F59E0B"/>
-    </svg>
-  ),
-  charity: (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-label="Từ thiện" fill="none">
-      <path d="M16 25s-7-4.5-7-10a5 5 0 0 1 10 0 5 5 0 0 1 10 0c0 5.5-7 10-7 10z" fill="#8B5CF6" fillOpacity="0.12"/>
-      <path d="M16 25s-7-4.5-7-10a5 5 0 0 1 10 0 5 5 0 0 1 10 0c0 5.5-7 10-7 10z" stroke="#8B5CF6" strokeWidth="2" strokeLinejoin="round"/>
-    </svg>
-  ),
-  emergency: (
-    <svg width="32" height="32" viewBox="0 0 32 32" aria-label="Dự phòng linh hoạt" fill="none">
-      <circle cx="16" cy="16" r="12" fill="#F97316" fillOpacity="0.12"/>
-      <circle cx="16" cy="16" r="12" stroke="#F97316" strokeWidth="2"/>
-      <path d="M16 11v6M16 21h.01" stroke="#F97316" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  ),
-};
-
-const categories = [
-  { value: 'essentials', label: 'Tiêu dùng thiết yếu (50%)', color: '#10B981', icon: CategoryIcons.essentials },
-  { value: 'savings', label: 'Tiết kiệm bắt buộc (20%)', color: '#3B82F6', icon: CategoryIcons.savings },
-  { value: 'selfInvestment', label: 'Đầu tư bản thân (15%)', color: '#F59E0B', icon: CategoryIcons.selfInvestment },
-  { value: 'charity', label: 'Từ thiện (5%)', color: '#8B5CF6', icon: CategoryIcons.charity },
-  { value: 'emergency', label: 'Dự phòng linh hoạt (10%)', color: '#F97316', icon: CategoryIcons.emergency },
-];
-
-// Tạo state khởi tạo cho visibility
 const initialVisibilityState = categories.reduce((acc, category) => {
   acc[category.value] = false;
   return acc;
-}, { total: false }); // Thêm 'total' cho thẻ tổng số dư
+}, { total: false });
 
 function Home() {
   // State
@@ -74,12 +29,7 @@ function Home() {
     emergency: 0,
   });
   const [transactionHistory, setTransactionHistory] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
+  const { isDarkMode } = useContext(FinanceContext);
   const [currentPage, setCurrentPage] = useState(1);
   const [minAmount, setMinAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState('');
@@ -93,7 +43,7 @@ function Home() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
-  
+
   // State mới để quản lý ẩn/hiện cho từng phần tử
   const [visibility, setVisibility] = useState(initialVisibilityState);
 
@@ -109,7 +59,7 @@ function Home() {
       [key]: !prev[key],
     }));
   };
-  
+
   // Hàm bật/tắt tất cả (cho nút con mắt)
   const toggleAllVisibility = () => {
     // Nếu có ít nhất một mục đang ẩn, thì hiện tất cả. Ngược lại, ẩn tất cả.
@@ -120,7 +70,7 @@ function Home() {
     }, {});
     setVisibility(newState);
   };
-  
+
   // Biến để quyết định icon con mắt nào sẽ hiển thị
   const isAnyAmountVisible = Object.values(visibility).some(v => v === true);
 
@@ -147,10 +97,10 @@ function Home() {
       setIsLoading(true);
       try {
         const [allocRes, expenseRes] = await Promise.all([
-          axios.get('https://backend-rockefeller-finance.onrender.com/api/allocations', {
+          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('https://backend-rockefeller-finance.onrender.com/api/expenses', {
+          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -186,17 +136,6 @@ function Home() {
     // eslint-disable-next-line
   }, [token, navigate]);
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.style.background = '#111827';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.background = '#F3F4F6';
-    }
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   const formatVND = (value) => {
     const num = parseFloat(value) || 0;
@@ -205,7 +144,7 @@ function Home() {
 
   const totalAmount = useMemo(() =>
     categories.reduce((sum, cat) => sum + parseFloat(allocations[cat.value] || 0), 0)
-  , [allocations]);
+    , [allocations]);
 
   const recentTransactionsForChart = transactionHistory.slice(0, 5);
   const categoryTotals = categories.reduce((acc, cat) => {
@@ -353,40 +292,24 @@ function Home() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900'}`}
+      className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900'}`}
       ref={mainRef}
     >
       <header className="sticky top-0 z-40 bg-opacity-80 backdrop-blur-md shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3 md:py-4 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between px-4 py-3 md:py-4 max-w-7xl mx-auto">
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2 font-quicksand">
             <svg width="28" height="28" viewBox="0 0 32 32" aria-label="dashboard" fill="none">
-              <circle cx="16" cy="16" r="14" fill="#2563eb" fillOpacity="0.12"/>
-              <circle cx="16" cy="16" r="14" stroke="#2563eb" strokeWidth="2"/>
-              <path d="M10 20v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
-              <rect x="13" y="14" width="6" height="6" rx="1" fill="#2563eb" fillOpacity="0.18"/>
+              <circle cx="16" cy="16" r="14" fill="#2563eb" fillOpacity="0.12" />
+              <circle cx="16" cy="16" r="14" stroke="#2563eb" strokeWidth="2" />
+              <path d="M10 20v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
+              <rect x="13" y="14" width="6" height="6" rx="1" fill="#2563eb" fillOpacity="0.18" />
             </svg>
             Bảng điều khiển
           </h1>
-          <button
-            aria-label="Chuyển chế độ sáng/tối"
-            onClick={toggleDarkMode}
-            className={`rounded-full p-2 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-100 hover:bg-blue-200'}`}
-          >
-            {isDarkMode ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" aria-label="Light mode" fill="none">
-                <circle cx="12" cy="12" r="5" fill="#FDE68A"/>
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="#FDE68A" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" aria-label="Dark mode" fill="none">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z" fill="#1E293B"/>
-              </svg>
-            )}
-          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-2 md:px-6 py-4 md:py-8">
+      <main className="max-w-7xl mx-auto px-2 md:px-6 py-4 md:py-8">
         {isLoading && (
           <div className="flex justify-center items-center py-10">
             <svg className="animate-spin h-10 w-10 text-blue-500" viewBox="0 0 24 24">
@@ -410,319 +333,72 @@ function Home() {
               </p>
             </div>
 
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 font-quicksand">
-                <div className={`p-5 rounded-2xl shadow-lg col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col items-center justify-center bg-gradient-to-br ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-blue-100 via-white to-blue-50'} transition`}>
-                    <div className="flex items-center justify-center gap-3 mb-1">
-                    <h3 className="text-lg font-bold flex items-center gap-2">
-                        <svg width="24" height="24" viewBox="0 0 24 24" aria-label="balance" fill="none">
-                        <rect x="3" y="7" width="18" height="10" rx="4" fill="#2563eb" fillOpacity="0.10"/>
-                        <rect x="3" y="7" width="18" height="10" rx="4" stroke="#2563eb" strokeWidth="2"/>
-                        <path d="M7 12h10" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
-                        </svg>
-                        Tổng số dư
-                    </h3>
-                    <button
-                        onClick={toggleAllVisibility}
-                        aria-label="Hiện/Ẩn tất cả số tiền"
-                        className={`p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ${isDarkMode ? 'focus:ring-offset-gray-800 focus:ring-blue-400' : 'focus:ring-offset-blue-100 focus:ring-blue-500'}`}
-                    >
-                        {isAnyAmountVisible ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                        </svg>
-                        )}
-                    </button>
-                    </div>
-                    
-                    <div className="text-center cursor-pointer" onClick={() => toggleVisibility('total')}>
-                        <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-300 mb-1">
-                            {visibility.total ? formatVND(totalAmount) : '******** VND'}
-                        </p>
-                        <p className="text-sm italic text-gray-500 dark:text-gray-300">
-                            {visibility.total ? numberToWords(totalAmount) : '********'}
-                        </p>
-                    </div>
-                </div>
-                
-                {categories.map((cat) => (
-                    <div
-                        key={cat.value}
-                        className={`p-4 rounded-2xl shadow-lg flex flex-col items-center justify-center bg-gradient-to-br ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} transition cursor-pointer`}
-                        onClick={() => toggleVisibility(cat.value)}
-                    >
-                        <span className="mb-1 pointer-events-none">{cat.icon}</span>
-                        <h3 className="text-base font-semibold text-center pointer-events-none">{cat.label}</h3>
-                        <p
-                            className="text-xl font-bold"
-                            style={{ color: cat.color }}
-                        >
-                            {visibility[cat.value] ? formatVND(allocations[cat.value] || 0) : '******** VND'}
-                        </p>
-                    </div>
-                ))}
-            </section>
+            <AllocationHeader
+              categories={categories}
+              totalAmount={totalAmount}
+              allocations={allocations}
+              visibility={visibility}
+              toggleVisibility={toggleVisibility}
+              toggleAllVisibility={toggleAllVisibility}
+              isAnyAmountVisible={isAnyAmountVisible}
+              formatVND={formatVND}
+              numberToWords={numberToWords}
+              isDarkMode={isDarkMode}
+            />
 
-            <section className="mb-8 font-quicksand">
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 ">
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-label="chart" fill="none">
-                  <circle cx="12" cy="12" r="10" fill="#2563eb" fillOpacity="0.10"/>
-                  <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="2"/>
-                  <path d="M12 6v6l4 2" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Phân tích chi tiêu gần đây
-              </h3>
-              <div className={`p-4 rounded-2xl shadow-lg bg-gradient-to-br font-quicksand ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} transition`}>
-                {recentTransactionsForChart.length > 0 ? (
-                  <div className="relative" style={{ height: '260px', minHeight: '200px' }}>
-                    <Doughnut data={chartData} options={chartOptions} />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none font-quicksand">
-                      <span className="text-xs text-gray-500 dark:text-gray-300">Tổng</span>
-                      <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{formatVND(
-                        recentTransactionsForChart.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0)
-                      )}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-600 dark:text-gray-300 text-center">Chưa có giao dịch để phân tích.</p>
-                )}
-              </div>
-            </section>
+            <AllocationChart
+              chartData={chartData}
+              chartOptions={chartOptions}
+              recentTransactionsForChart={recentTransactionsForChart}
+              formatVND={formatVND}
+              isDarkMode={isDarkMode}
+            />
 
-            <section className="mb-6 relative font-quicksand">
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 font-quicksand">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-label="filter" fill="none">
-                  <rect x="4" y="4" width="16" height="16" rx="4" fill="#2563eb" fillOpacity="0.10"/>
-                  <rect x="4" y="4" width="16" height="16" rx="4" stroke="#2563eb" strokeWidth="2"/>
-                  <path d="M8 10h8M10 14h4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                Bộ lọc giao dịch
-              </h3>
-              <div className="flex flex-col gap-3 md:gap-0 md:grid md:grid-cols-2 lg:grid-cols-4 mb-3">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Số tiền tối thiểu (VND)</label>
-                  <input
-                    type="number"
-                    value={minAmount}
-                    onChange={(e) => setMinAmount(e.target.value)}
-                    className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-                    placeholder="Tối thiểu"
-                    min={0}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Số tiền tối đa (VND)</label>
-                  <input
-                    type="number"
-                    value={maxAmount}
-                    onChange={(e) => setMaxAmount(e.target.value)}
-                    className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-                    placeholder="Tối đa"
-                    min={0}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Chi tiết</label>
-                  <input
-                    type="text"
-                    value={searchDetails}
-                    onChange={(e) => setSearchDetails(e.target.value)}
-                    className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-                    placeholder="Ví dụ: Mua thực phẩm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Vị trí</label>
-                  <input
-                    type="text"
-                    value={searchLocation}
-                    onChange={(e) => setSearchLocation(e.target.value)}
-                    className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-                    placeholder="Ví dụ: VinMart"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col md:flex-row gap-2 mt-2">
-                <button
-                  onClick={toggleSearchMenu}
-                  className={`w-full md:w-auto px-4 py-2 rounded-lg text-white font-semibold ${isSearchMenuOpen ? 'bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} transition`}
-                  aria-expanded={isSearchMenuOpen}
-                  aria-controls="advanced-filters"
-                >
-                  {isSearchMenuOpen ? 'Ẩn bộ lọc nâng cao' : 'Bộ lọc nâng cao'}
-                </button>
-                <button
-                  onClick={handleResetSearch}
-                  className={`w-full md:w-auto px-4 py-2 rounded-lg text-white font-semibold ${isDarkMode ? 'bg-gray-600 hover:bg-gray-700' : 'bg-gray-500 hover:bg-gray-600'} transition`}
-                >
-                  Xóa bộ lọc
-                </button>
-              </div>
-              {isSearchMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-30 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300"
-                    onClick={() => setIsSearchMenuOpen(false)}
-                    aria-label="Đóng bộ lọc nâng cao"
-                  />
-                  <div
-                    id="advanced-filters"
-                    className={`fixed left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 mt-0 rounded-xl shadow-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gradient-to-br ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} animate-fade-in w-11/12 max-w-xl`}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Danh mục</label>
-                      <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-                      >
-                        <option value="">Tất cả danh mục</option>
-                        {categories.map((cat) => (
-                          <option key={cat.value} value={cat.value}>{cat.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Tháng/Năm</label>
-                      <select
-                        value={selectedMonthYear}
-                        onChange={(e) => setSelectedMonthYear(e.target.value)}
-                        className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'}`}
-                      >
-                        <option value="">Tất cả thời gian</option>
-                        {availableMonths.map((month) => (
-                          <option key={month} value={month}>{month}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <button
-                      className="md:col-span-2 mt-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold transition"
-                      onClick={() => setIsSearchMenuOpen(false)}
-                      type="button"
-                    >
-                      Đóng bộ lọc nâng cao
-                    </button>
-                  </div>
-                </>
-              )}
-            </section>
+            <TransactionFilters
+              minAmount={minAmount} setMinAmount={setMinAmount}
+              maxAmount={maxAmount} setMaxAmount={setMaxAmount}
+              searchDetails={searchDetails} setSearchDetails={setSearchDetails}
+              searchLocation={searchLocation} setSearchLocation={setSearchLocation}
+              selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
+              selectedMonthYear={selectedMonthYear} setSelectedMonthYear={setSelectedMonthYear}
+              isSearchMenuOpen={isSearchMenuOpen} setIsSearchMenuOpen={setIsSearchMenuOpen}
+              categories={categories}
+              availableMonths={availableMonths}
+              handleResetSearch={handleResetSearch}
+              toggleSearchMenu={toggleSearchMenu}
+              isDarkMode={isDarkMode}
+            />
 
-            <section>
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 font-quicksand">
-                <svg width="20" height="20" viewBox="0 0 24 24" aria-label="transactions" fill="none">
-                  <rect x="4" y="4" width="16" height="16" rx="4" fill="#2563eb" fillOpacity="0.10"/>
-                  <rect x="4" y="4" width="16" height="16" rx="4" stroke="#2563eb" strokeWidth="2"/>
-                  <path d="M8 10h8M10 14h4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                Giao dịch gần đây
-              </h3>
-              {Object.keys(paginatedGrouped).length > 0 ? (
-                <>
-                  {Object.keys(paginatedGrouped).sort((a, b) => {
-                    const [monthA, yearA] = a.split(' ');
-                    const [monthB, yearB] = b.split(' ');
-                    const dateA = new Date(yearA, new Date(Date.parse(monthA + " 1, 2000")).getMonth());
-                    const dateB = new Date(yearB, new Date(Date.parse(monthB + " 1, 2000")).getMonth());
-                    return dateB - dateA;
-                  }).map((monthYear) => (
-                    <div key={monthYear} className="mb-4 font-quicksand">
-                      <button
-                        onClick={() => toggleMonth(monthYear)}
-                        className={`w-full flex justify-between items-center p-3 rounded-lg text-left font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-100 hover:bg-blue-200'}`}
-                        aria-expanded={!!expandedMonths[monthYear]}
-                        aria-controls={`transactions-${monthYear}`}
-                      >
-                        <span>{monthYear} <span className="font-normal text-sm text-gray-500 dark:text-gray-300">({paginatedGrouped[monthYear].length} giao dịch)</span></span>
-                        <svg
-                          className={`w-5 h-5 transform transition-transform duration-200 ${expandedMonths[monthYear] ? 'rotate-180' : ''}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      {expandedMonths[monthYear] && (
-                        <div
-                          id={`transactions-${monthYear}`}
-                          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 animate-fade-in"
-                        >
-                          {sortTransactionsByDateDesc(paginatedGrouped[monthYear]).map((transaction, index) => (
-                            <div
-                              key={index}
-                              className={`p-4 rounded-2xl shadow-lg flex flex-col gap-1 bg-gradient-to-br ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} transition`}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-lg">{categories.find(cat => cat.value === transaction.category)?.icon}</span>
-                                <span className="font-semibold">{categories.find(cat => cat.value === transaction.category)?.label || 'Không xác định'}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500 dark:text-gray-300">Số tiền:</span>
-                                <span className="font-bold text-blue-600 dark:text-blue-300">{formatVND(transaction.amount)}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500 dark:text-gray-300">Chi tiết:</span>
-                                <span>{transaction.details || <span className="italic text-gray-400">Không có</span>}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500 dark:text-gray-300">Vị trí:</span>
-                                <span>{transaction.location || <span className="italic text-gray-400">Không có</span>}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500 dark:text-gray-300">Thời gian:</span>
-                                <span>{transaction.timestamp || <span className="italic text-gray-400">Không có</span>}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  <div className="flex flex-wrap justify-center gap-2 mt-6  font-quicksand">
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className={`px-4 py-2 rounded-lg font-semibold ${currentPage === 1 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white transition`}
-                    >
-                      Trước
-                    </button>
-                    <span className="px-4 py-2 font-semibold">{`Trang ${currentPage} / ${totalPages || 1}`}</span>
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1))}
-                      disabled={currentPage === (totalPages || 1)}
-                      className={`px-4 py-2 rounded-lg font-semibold ${currentPage === (totalPages || 1) ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'} text-white transition`}
-                    >
-                      Sau
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="p-4 bg-yellow-100 text-yellow-700 rounded-xl shadow text-center animate-fade-in  font-quicksand">
-                  Không tìm thấy giao dịch phù hợp với bộ lọc.
-                </div>
-              )}
-            </section>
+            <TransactionHistoryList
+              paginatedGrouped={paginatedGrouped}
+              expandedMonths={expandedMonths}
+              toggleMonth={toggleMonth}
+              sortTransactionsByDateDesc={sortTransactionsByDateDesc}
+              categories={categories}
+              formatVND={formatVND}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+              isDarkMode={isDarkMode}
+            />
           </>
         )}
       </main>
 
-      {showScrollTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
-          aria-label="Lên đầu trang"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7-7" />
-          </svg>
-        </button>
-      )}
-    </div>
+      {
+        showScrollTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
+            aria-label="Lên đầu trang"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7-7" />
+            </svg>
+          </button>
+        )
+      }
+    </div >
   );
 }
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { Eye, EyeOff } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 
 function Login() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -45,8 +46,8 @@ function Login() {
     setIsSubmitting(true);
     try {
       const endpoint = isLoginMode
-        ? 'https://backend-rockefeller-finance.onrender.com/api/login'
-        : 'https://backend-rockefeller-finance.onrender.com/api/register';
+        ? `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/login`
+        : `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/register`;
       const response = await axios.post(endpoint, { username, password });
       if (isLoginMode) {
         localStorage.setItem('token', response.data.token);
@@ -60,7 +61,7 @@ function Login() {
         setTimeout(async () => {
           try {
             const loginResponse = await axios.post(
-              'https://backend-rockefeller-finance.onrender.com/api/login',
+              `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/login`,
               { username, password }
             );
             localStorage.setItem('token', loginResponse.data.token);
@@ -82,6 +83,23 @@ function Login() {
     toast('Vui lòng liên hệ hỗ trợ tại support@rockefeller-finance.com để đặt lại mật khẩu.', {
       duration: 5000,
     });
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/google-login`,
+        { credential: credentialResponse.credential }
+      );
+      localStorage.setItem('token', response.data.token);
+      toast.success('Đăng nhập Google thành công!');
+      setTimeout(() => navigate('/home'), 1000);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Lỗi đăng nhập Google');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleDarkMode = () => {
@@ -127,9 +145,8 @@ function Login() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
-              } ${errors.username ? 'border-red-500' : ''}`}
+              className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
+                } ${errors.username ? 'border-red-500' : ''}`}
               placeholder="Nhập tên người dùng"
               disabled={isSubmitting}
             />
@@ -141,9 +158,8 @@ function Login() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
-              } ${errors.password ? 'border-red-500' : ''}`}
+              className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
+                } ${errors.password ? 'border-red-500' : ''}`}
               placeholder="Nhập mật khẩu"
               disabled={isSubmitting}
             />
@@ -163,9 +179,8 @@ function Login() {
                 type={showPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                  isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
-                } ${errors.confirmPassword ? 'border-red-500' : ''}`}
+                className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-300'
+                  } ${errors.confirmPassword ? 'border-red-500' : ''}`}
                 placeholder="Xác nhận mật khẩu"
                 disabled={isSubmitting}
               />
@@ -175,9 +190,8 @@ function Login() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full p-2 rounded text-white ${
-              isSubmitting ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
-            } transition transform hover:scale-105`}
+            className={`w-full p-2 rounded text-white ${isSubmitting ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'
+              } transition transform hover:scale-105`}
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center">
@@ -190,6 +204,24 @@ function Login() {
             ) : isLoginMode ? 'Đăng nhập' : 'Đăng ký'}
           </button>
         </form>
+
+        <div className="my-6 flex items-center">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="px-3 text-gray-500 text-sm">Hoặc</span>
+          <div className="flex-1 border-t border-gray-300"></div>
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => toast.error('Đăng nhập Google thất bại')}
+            useOneTap
+            theme={isDarkMode ? 'filled_black' : 'outline'}
+            shape="pill"
+            width="100%"
+          />
+        </div>
+
         {isLoginMode && (
           <button
             onClick={handleForgotPassword}

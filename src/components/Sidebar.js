@@ -1,7 +1,9 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle } from 'lucide-react';
+import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle, List } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useContext } from 'react';
+import { FinanceContext } from '../contexts/FinanceContext';
 
 // Responsive, modern Sidebar with improved mobile UX
 const Sidebar = memo(() => {
@@ -10,7 +12,7 @@ const Sidebar = memo(() => {
     if (window.innerWidth < 768) return false;
     return localStorage.getItem('sidebarCollapsed') === 'true';
   });
-  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+  const { isDarkMode } = useContext(FinanceContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
@@ -33,24 +35,24 @@ const Sidebar = memo(() => {
     primary: '#2563eb', // blue-600
     secondary: '#60a5fa', // blue-400
     tertiary: '#f1f5f9', // slate-100
-    background: isDarkMode ? 'rgba(30,41,59,0.85)' : 'rgba(255,255,255,0.85)',
+    background: isDarkMode ? 'rgba(2, 6, 23, 0.95)' : 'rgba(255,255,255,0.85)',
     glass: isDarkMode
-      ? 'bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-gray-900/60'
+      ? 'bg-gradient-to-br from-slate-950/90 via-slate-900/80 to-slate-950/70'
       : 'bg-gradient-to-br from-white/80 via-blue-50/70 to-white/60',
-    border: isDarkMode ? 'border-gray-700/60' : 'border-blue-200/60',
-    shadow: isDarkMode ? 'shadow-blue-900/30' : 'shadow-blue-200/40',
+    border: isDarkMode ? 'border-white/5' : 'border-blue-200/60',
+    shadow: isDarkMode ? 'shadow-black/40' : 'shadow-blue-200/40',
     navItemActiveBg: isDarkMode
-      ? 'bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900'
+      ? 'bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800'
       : 'bg-gradient-to-r from-blue-600 to-blue-400',
     navItemInactiveBg: isDarkMode
-      ? 'hover:bg-gray-800/80'
+      ? 'hover:bg-white/5'
       : 'hover:bg-blue-100/80',
     navItemInactiveText: isDarkMode
-      ? 'text-gray-200'
+      ? 'text-slate-400'
       : 'text-gray-700',
     navItemActiveText: 'text-white',
     navItemHoverText: isDarkMode
-      ? 'hover:text-blue-300'
+      ? 'hover:text-white'
       : 'hover:text-blue-700',
   };
 
@@ -67,6 +69,7 @@ const Sidebar = memo(() => {
   const menuItems = [
     { path: '/home', label: 'Trang chủ', icon: Home },
     { path: '/expenses', label: 'Chi tiêu', icon: DollarSign },
+    { path: '/transactions', label: 'Lịch sử', icon: List },
     { path: '/investments', label: 'Đầu tư', icon: Briefcase },
     { path: '/settings', label: 'Cài đặt', icon: Settings },
   ];
@@ -75,7 +78,7 @@ const Sidebar = memo(() => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch('https://backend-rockefeller-finance.onrender.com/api/logout', {
+        await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/logout`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -174,6 +177,16 @@ const Sidebar = memo(() => {
   const sidebarMinWidth = isCollapsed && !isMobile ? 72 : isMobile ? 0 : 270;
   const sidebarMaxWidth = isCollapsed && !isMobile ? 72 : isMobile ? '90vw' : 270;
 
+  // Sync with CSS variable for AppLayout
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isMobile) {
+      root.style.setProperty('--sidebar-width', '0px');
+    } else {
+      root.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+    }
+  }, [sidebarWidth, isMobile]);
+
   return (
     <>
       {/* Mobile menu button */}
@@ -245,11 +258,10 @@ const Sidebar = memo(() => {
         {/* Quote */}
         {(!isCollapsed || isMobile) && (
           <div
-            className={`px-4 py-3 mb-3 mx-3 rounded-2xl shadow-sm border border-blue-200/40 dark:border-gray-700/40 ${
-              isDarkMode
-                ? 'bg-gradient-to-r from-gray-900/80 via-gray-800/70 to-gray-900/60 text-white'
-                : 'bg-gradient-to-r from-blue-50/80 via-white/80 to-blue-100/70 text-gray-900'
-            }`}
+            className={`px-4 py-3 mb-3 mx-3 rounded-2xl shadow-sm border border-blue-200/40 dark:border-gray-700/40 ${isDarkMode
+              ? 'bg-gradient-to-r from-gray-900/80 via-gray-800/70 to-gray-900/60 text-white'
+              : 'bg-gradient-to-r from-blue-50/80 via-white/80 to-blue-100/70 text-gray-900'
+              }`}
           >
             <p className="text-xs italic flex items-center gap-1.5">
               <AlertCircle size={15} className="text-blue-400" />
@@ -300,20 +312,6 @@ const Sidebar = memo(() => {
         </ul>
         {/* Bottom actions */}
         <div className="w-full px-3 pb-5 mt-auto flex flex-col gap-2">
-          {(!isCollapsed || isMobile) && (
-            <button
-              onClick={() => setIsDarkMode((d) => !d)}
-              className={darkModeBtn}
-              aria-label="Chuyển đổi chế độ sáng/tối"
-              style={{
-                letterSpacing: '0.01em',
-                fontWeight: 700,
-                fontSize: 15,
-              }}
-            >
-              {isDarkMode ? 'Chế độ Sáng' : 'Chế độ Tối'}
-            </button>
-          )}
           <button
             onClick={() => {
               handleLogout();

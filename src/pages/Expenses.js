@@ -1,79 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import numberToWords from '../utils/numberToWords';
+import { TrendingDown } from 'lucide-react';
+import ExpenseForm from '../components/Expenses/ExpenseForm';
+import ExpenseHistory from '../components/Expenses/ExpenseHistory';
+import AllocationCards from '../components/Expenses/AllocationCards';
+import ExpenseDashboardHeader from '../components/Expenses/ExpenseDashboardHeader';
+import SpendingChart from '../components/Expenses/SpendingChart';
+import DepositModal from '../components/Expenses/DepositModal';
+import { FinanceContext } from '../contexts/FinanceContext';
+import { categories } from '../constants/categories';
+import { numberToWords } from '../constants/investments';
 
-// Category config to match Home.js
-const categories = [
-  {
-    value: 'essentials',
-    label: 'Tiêu dùng thiết yếu',
-    color: '#22c55e',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-label="essentials" fill="none">
-        <rect x="4" y="7" width="16" height="10" rx="4" fill="#22c55e" fillOpacity="0.10"/>
-        <rect x="4" y="7" width="16" height="10" rx="4" stroke="#22c55e" strokeWidth="2"/>
-        <path d="M7 12h10" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    value: 'savings',
-    label: 'Tiết kiệm bắt buộc',
-    color: '#3b82f6',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-label="savings" fill="none">
-        <circle cx="12" cy="12" r="8" fill="#3b82f6" fillOpacity="0.10"/>
-        <circle cx="12" cy="12" r="8" stroke="#3b82f6" strokeWidth="2"/>
-        <path d="M12 8v4l3 2" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-  {
-    value: 'selfInvestment',
-    label: 'Đầu tư bản thân',
-    color: '#eab308',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-label="selfInvestment" fill="none">
-        <rect x="6" y="6" width="12" height="12" rx="6" fill="#eab308" fillOpacity="0.10"/>
-        <rect x="6" y="6" width="12" height="12" rx="6" stroke="#eab308" strokeWidth="2"/>
-        <path d="M12 10v2h2" stroke="#eab308" strokeWidth="2" strokeLinecap="round"/>
-      </svg>
-    ),
-  },
-  {
-    value: 'charity',
-    label: 'Từ thiện',
-    color: '#a21caf',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-label="charity" fill="none">
-        <path d="M12 21s-6-4.35-6-9a6 6 0 1112 0c0 4.65-6 9-6 9z" fill="#a21caf" fillOpacity="0.10"/>
-        <path d="M12 21s-6-4.35-6-9a6 6 0 1112 0c0 4.65-6 9-6 9z" stroke="#a21caf" strokeWidth="2"/>
-      </svg>
-    ),
-  },
-  {
-    value: 'emergency',
-    label: 'Dự phòng linh hoạt',
-    color: '#f97316',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-label="emergency" fill="none">
-        <rect x="4" y="4" width="16" height="16" rx="8" fill="#f97316" fillOpacity="0.10"/>
-        <rect x="4" y="4" width="16" height="16" rx="8" stroke="#f97316" strokeWidth="2"/>
-        <path d="M12 8v4l3 2" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-];
-
-// Tạo state khởi tạo cho visibility
 const initialVisibilityState = categories.reduce((acc, category) => {
-    acc[category.value] = false;
-    return acc;
+  acc[category.value] = false;
+  return acc;
 }, { budgetBalance: false, totalAllocations: false });
 
-
 function Expenses() {
-  // State
+  const navigate = useNavigate();
+  // ... (keep state)
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
@@ -91,25 +37,25 @@ function Expenses() {
   });
   const [expenses, setExpenses] = useState([]);
   const [error, setError] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(
-    () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-  );
+  const { isDarkMode } = useContext(FinanceContext);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
-  const [showAllExpenses, setShowAllExpenses] = useState(false); // For expanding/collapsing expense history
-  const [visibility, setVisibility] = useState(initialVisibilityState); // State ẩn/hiện
+  const [showAllExpenses, setShowAllExpenses] = useState(false);
+  const [visibility, setVisibility] = useState(initialVisibilityState);
   const token = localStorage.getItem('token');
   const snackbarTimeout = useRef(null);
-  
-  // Hàm bật/tắt cho một phần tử cụ thể
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+
+  const handleDepositClick = () => {
+    setIsDepositModalOpen(true);
+  };
+
   const toggleVisibility = (key) => {
     setVisibility(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Biến kiểm tra xem có mục nào đang hiển thị không
   const isAnyAmountVisible = Object.values(visibility).some(v => v === true);
 
-  // Hàm bật/tắt tất cả
   const toggleAllVisibility = () => {
     const shouldShowAll = !isAnyAmountVisible;
     const newState = Object.keys(visibility).reduce((acc, key) => {
@@ -119,7 +65,6 @@ function Expenses() {
     setVisibility(newState);
   };
 
-  // Theme sync (like Home.js)
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -130,32 +75,24 @@ function Expenses() {
     }
   }, [isDarkMode]);
 
-  // Hàm quản lý hiển thị thông báo (snackbar)
   const showNotification = (message) => {
     setSnackbarMsg(message);
     setShowSnackbar(true);
-
-    if (snackbarTimeout.current) {
-      clearTimeout(snackbarTimeout.current);
-    }
-
-    snackbarTimeout.current = setTimeout(() => {
-      setShowSnackbar(false);
-    }, 3000); // Tự động ẩn sau 3 giây
+    if (snackbarTimeout.current) clearTimeout(snackbarTimeout.current);
+    snackbarTimeout.current = setTimeout(() => setShowSnackbar(false), 3000);
   };
 
-  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [budgetRes, expensesRes, allocationsRes] = await Promise.all([
-          axios.get('https://backend-rockefeller-finance.onrender.com/api/initial-budget', {
+          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('https://backend-rockefeller-finance.onrender.com/api/expenses', {
+          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get('https://backend-rockefeller-finance.onrender.com/api/allocations', {
+          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -167,16 +104,13 @@ function Expenses() {
       }
     };
     if (token) fetchData();
-    // eslint-disable-next-line
   }, [token]);
-  
-  // Format currency
+
   const formatVND = (value) => {
     const num = parseFloat(value) || 0;
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
   };
 
-  // Budget submit
   const handleBudgetSubmit = async (e) => {
     e.preventDefault();
     const parsedBudget = parseFloat(newBudget);
@@ -187,7 +121,7 @@ function Expenses() {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        'https://backend-rockefeller-finance.onrender.com/api/initial-budget',
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`,
         { initialBudget: parsedBudget },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -203,7 +137,6 @@ function Expenses() {
     }
   };
 
-  // Expense submit
   const handleExpenseSubmit = async (e) => {
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
@@ -218,23 +151,22 @@ function Expenses() {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        'https://backend-rockefeller-finance.onrender.com/api/expenses',
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`,
         {
           amount: parsedAmount,
           category,
           purpose,
           location,
-          date: date || new Date().toLocaleDateString('vi-VN'),
+          date: date || new Date().toISOString(),
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExpenses(response.data);
-      // Update allocations and budget
       const [budgetRes, allocRes] = await Promise.all([
-        axios.get('https://backend-rockefeller-finance.onrender.com/api/initial-budget', {
+        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get('https://backend-rockefeller-finance.onrender.com/api/allocations', {
+        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -254,20 +186,18 @@ function Expenses() {
     }
   };
 
-  // Delete expense
   const handleDeleteExpense = async (index) => {
     try {
       const response = await axios.delete(
-        `https://backend-rockefeller-finance.onrender.com/api/expenses/${index}`,
+        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses/${index}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExpenses(response.data);
-      // Update budget and allocations
       const [budgetRes, allocRes] = await Promise.all([
-        axios.get('https://backend-rockefeller-finance.onrender.com/api/initial-budget', {
+        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get('https://backend-rockefeller-finance.onrender.com/api/allocations', {
+        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -279,10 +209,7 @@ function Expenses() {
     }
   };
 
-  // Theme toggle
-  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
-  // Total allocations
   const totalAmount =
     parseFloat(allocations.essentials || 0) +
     parseFloat(allocations.savings || 0) +
@@ -290,17 +217,16 @@ function Expenses() {
     parseFloat(allocations.charity || 0) +
     parseFloat(allocations.emergency || 0);
 
-  // Expense history logic
+  const totalExpensesSpent = expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
   const sortedExpenses = [...expenses].reverse();
-  const COLLAPSED_COUNT = 1;
+  const COLLAPSED_COUNT = 5;
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 overflow-x-hidden ${
-        isDarkMode
-          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white'
-          : 'bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900'
-      }`}
+      className={`min-h-screen transition-colors duration-300 overflow-x-hidden ${isDarkMode
+        ? 'bg-slate-950 text-white'
+        : 'bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900'
+        }`}
       style={{
         minHeight: '100vh',
         WebkitOverflowScrolling: 'touch',
@@ -310,497 +236,174 @@ function Expenses() {
       {/* Snackbar */}
       <div
         className={`fixed z-50 left-1/2 -translate-x-1/2 bottom-6 px-6 py-3 rounded-xl shadow-lg font-medium text-base transition-all duration-500
-          ${
-            showSnackbar
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4 pointer-events-none'
-          }
+          ${showSnackbar ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
           ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}
         `}
         role="status"
         aria-live="polite"
-        style={{
-          maxWidth: '95vw',
-          width: 'max-content',
-          minWidth: 180,
-          boxSizing: 'border-box',
-        }}
+        style={{ maxWidth: '95vw', width: 'max-content', minWidth: 180, boxSizing: 'border-box' }}
       >
         {snackbarMsg}
       </div>
 
-      {/* Topbar - match Home.js */}
+      {/* Topbar */}
       <header
-        className="sticky top-0 z-40 bg-opacity-95 shadow-sm"
-        style={{
-          WebkitBackdropFilter:
-            typeof window !== 'undefined' && window.innerWidth <= 640
-              ? undefined
-              : 'blur(10px)',
-          backdropFilter:
-            typeof window !== 'undefined' && window.innerWidth <= 640
-              ? undefined
-              : 'blur(10px)',
-        }}
+        className="z-40 bg-opacity-95"
       >
-        <div className="flex items-center justify-between px-3 py-2 md:py-4 max-w-3xl mx-auto">
-          <h1
-            className="font-extrabold tracking-tight flex items-center gap-2 app-title"
-            style={{
-              fontSize: '1.35rem',
-              letterSpacing: '-0.01em',
-              textRendering: 'optimizeLegibility',
-              WebkitFontSmoothing: 'antialiased',
-              fontWeight: 900,
-              lineHeight: 1.1,
-            }}
-          >
+        <div className="flex items-center justify-between px-3 py-4 md:py-6 max-w-7xl mx-auto">
+          <h1 className="font-extrabold tracking-tight flex items-center gap-2 app-title" style={{ fontSize: '1.35rem', fontWeight: 900 }}>
             <svg width="28" height="28" viewBox="0 0 32 32" aria-label="expenses" fill="none">
-              <circle cx="16" cy="16" r="14" fill="#22c55e" fillOpacity="0.12"/>
-              <circle cx="16" cy="16" r="14" stroke="#22c55e" strokeWidth="2"/>
-              <path d="M10 20v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
-              <rect x="13" y="14" width="6" height="6" rx="1" fill="#22c55e" fillOpacity="0.18"/>
+              <circle cx="16" cy="16" r="14" fill="#22c55e" fillOpacity="0.12" />
+              <circle cx="16" cy="16" r="14" stroke="#22c55e" strokeWidth="2" />
+              <path d="M10 20v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
+              <rect x="13" y="14" width="6" height="6" rx="1" fill="#22c55e" fillOpacity="0.18" />
             </svg>
             <span className="title-text">Quản lý chi tiêu</span>
           </h1>
-          <button
-            onClick={toggleDarkMode}
-            aria-label="Chuyển đổi chế độ sáng/tối"
-            className={`rounded-full p-2 shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400
-              ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-blue-100'}
-            `}
-          >
-            {isDarkMode ? (
-              <svg className="w-6 h-6 text-yellow-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" />
-                <path d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 5.66l-.71-.71M4.05 4.93l-.71-.71" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-              </svg>
-            )}
-          </button>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-1 sm:px-3 py-6" style={{width: '100%'}}>
-        {/* Error - Chỉ hiển thị lỗi tải trang ban đầu */}
-        {error && !initialBudget && (
-          <div className="mb-4">
-            <div className="flex items-center gap-2 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-4 py-2 rounded-lg shadow-sm">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M12 9v2m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z" />
-              </svg>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Budget input */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {initialBudget === null || initialBudget === 0 ? (
-          <section className="mb-6">
-            <div className="glass-card p-4 rounded-2xl shadow-xl">
-              <h2 className="text-lg font-bold mb-2">Nhập ngân sách ban đầu</h2>
-              <form onSubmit={handleBudgetSubmit} className="space-y-3">
+          <section className="max-w-md mx-auto">
+            <div className={`p-8 rounded-3xl shadow-2xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-blue-100'}`}>
+              <h2 className="text-2xl font-black mb-6 text-center">Thiết lập ngân sách</h2>
+              <form onSubmit={handleBudgetSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1" htmlFor="initialBudget">
-                    Ngân sách ban đầu (VND)
-                  </label>
-                  <input
-                    id="initialBudget"
-                    type="number"
-                    value={newBudget}
-                    onChange={(e) => setNewBudget(e.target.value)}
-                    className={`input-modern ${isDarkMode ? 'dark' : ''}`}
-                    placeholder="Nhập ngân sách ban đầu"
-                    required
-                    min="1"
-                    inputMode="numeric"
-                  />
+                  <label className="block text-sm font-bold mb-2 opacity-70" htmlFor="initialBudget">Ngân sách khởi tạo (VND)</label>
+                  <input id="initialBudget" type="number" value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className={`input-modern ${isDarkMode ? 'dark' : ''}`} placeholder="Ví dụ: 10,000,000" required min="1" inputMode="numeric" />
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="btn-modern w-full"
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Đang xử lý...
-                    </span>
-                  ) : (
-                    'Lưu ngân sách'
-                  )}
+                <button type="submit" disabled={isSubmitting} className="btn-modern w-full py-4 text-lg">
+                  {isSubmitting ? "Đang xử lý..." : "Bắt đầu quản lý"}
                 </button>
               </form>
             </div>
           </section>
         ) : (
-          <>
-            {/* Add more budget */}
-            <section className="mb-6">
-              <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <h2 className="text-lg font-bold mb-2">Nạp thêm ngân sách</h2>
-                <form onSubmit={handleBudgetSubmit} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="addBudget">
-                      Số tiền nạp thêm (VND)
-                    </label>
-                    <input
-                      id="addBudget"
-                      type="number"
-                      value={newBudget}
-                      onChange={(e) => setNewBudget(e.target.value)}
-                      className={`input-modern ${isDarkMode ? 'dark' : ''}`}
-                      placeholder="Nhập số tiền nạp thêm"
-                      min="1"
-                      inputMode="numeric"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="btn-modern w-full"
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        Đang xử lý...
-                      </span>
-                    ) : (
-                      'Nạp thêm'
-                    )}
-                  </button>
-                </form>
-              </div>
-            </section>
+          <div className="flex flex-col gap-8">
+            {/* Hero Section */}
+            <ExpenseDashboardHeader
+              initialBudget={initialBudget}
+              totalExpenses={totalExpensesSpent}
+              visibility={visibility}
+              toggleVisibility={toggleVisibility}
+              formatVND={formatVND}
+              isDarkMode={isDarkMode}
+              onDeposit={handleDepositClick}
+            />
 
-            {/* Budget balance */}
-            <section className="mb-6">
-              <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold mb-1">Số dư ngân sách</h2>
+            {/* Dashboard Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+              {/* Left Column: Visuals & History */}
+              <div className="lg:col-span-2 flex flex-col gap-8">
+                <SpendingChart
+                  categories={categories}
+                  allocations={allocations}
+                  isDarkMode={isDarkMode}
+                  formatVND={formatVND}
+                />
+
+                <section>
+                  <div className="flex items-center justify-between mb-6 px-2">
+                    <h2 className="text-2xl font-black">Hoạt động gần đây</h2>
                     <button
-                        onClick={toggleAllVisibility}
-                        aria-label="Hiện/Ẩn tất cả số tiền"
-                        className={`p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ${isDarkMode ? 'focus:ring-offset-gray-800 focus:ring-blue-400' : 'focus:ring-offset-blue-100 focus:ring-blue-500'}`}
+                      onClick={() => navigate('/transactions')}
+                      className={`group flex items-center gap-1 text-sm font-bold transition-all ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-500 hover:text-blue-600'}`}
                     >
-                        {isAnyAmountVisible ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-                        )}
+                      Xem tất cả
+                      <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" /></svg>
                     </button>
-                </div>
-                <div className="cursor-pointer flex items-center justify-between" onClick={() => toggleVisibility('budgetBalance')}>
-                    <p className="text-2xl font-extrabold text-blue-500 dark:text-blue-300 tracking-tight">
-                        {visibility.budgetBalance ? formatVND(initialBudget) : '******** VND'}
-                    </p>
-                    <span className="text-3xl animate-pulse">💰</span>
-                </div>
-              </div>
-            </section>
-
-            {/* Add expense */}
-            <section className="mb-6">
-              <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <h2 className="text-lg font-bold mb-2">Thêm chi tiêu</h2>
-                <form onSubmit={handleExpenseSubmit} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="amount">
-                      Số tiền (VND)
-                    </label>
-                    <input
-                      id="amount"
-                      type="number"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className={`input-modern ${isDarkMode ? 'dark' : ''}`}
-                      placeholder="Nhập số tiền"
-                      required
-                      min="1"
-                      inputMode="numeric"
+                  </div>
+                  <div className={`rounded-3xl shadow-xl border overflow-hidden ${isDarkMode ? 'bg-gray-800/50 border-gray-700/50' : 'bg-white border-blue-100'}`}>
+                    <ExpenseHistory
+                      sortedExpenses={sortedExpenses.slice(0, 5)}
+                      showAllExpenses={false}
+                      setShowAllExpenses={() => navigate('/transactions')}
+                      handleDeleteExpense={handleDeleteExpense}
+                      expenses={expenses}
+                      formatVND={formatVND}
+                      isDarkMode={isDarkMode}
+                      COLLAPSED_COUNT={5}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="category">
-                      Danh mục
-                    </label>
-                    <div className="category-select-wrapper">
-                      <select
-                        id="category"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className={`input-modern category-select ${isDarkMode ? 'dark' : ''}`}
-                        required
-                      >
-                        <option value="">Chọn danh mục</option>
-                        {categories.map((cat) => (
-                          <option key={cat.value} value={cat.label}>
-                            {cat.label.replace(/\s\(\d+%\)/, '')}
-                            {allocations[cat.value] > 0 ? ` (${formatVND(allocations[cat.value])})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Mobile: show icon and color for selected category */}
-                      <div className="category-mobile-visual">
-                        {(() => {
-                          const cat = categories.find(c => c.label === category);
-                          if (!cat) return null;
-                          return (
-                            <span className="flex items-center gap-1">
-                              <span>{cat.icon}</span>
-                              <span style={{color: cat.color, fontWeight: 600, fontSize: '1rem'}}>{cat.label}</span>
-                            </span>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="purpose">
-                      Mục đích sử dụng
-                    </label>
-                    <input
-                      id="purpose"
-                      type="text"
-                      value={purpose}
-                      onChange={(e) => setPurpose(e.target.value)}
-                      className={`input-modern ${isDarkMode ? 'dark' : ''}`}
-                      placeholder="Nhập mục đích (ví dụ: Mua thực phẩm)"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="location">
-                      Vị trí chi tiêu
-                    </label>
-                    <input
-                      id="location"
-                      type="text"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className={`input-modern ${isDarkMode ? 'dark' : ''}`}
-                      placeholder="Nhập vị trí (ví dụ: Siêu thị VinMart)"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="date">
-                      Ngày
-                    </label>
-                    <input
-                      id="date"
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className={`input-modern ${isDarkMode ? 'dark' : ''}`}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="btn-modern w-full"
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                        Đang xử lý...
-                      </span>
-                    ) : (
-                      'Thêm chi tiêu'
-                    )}
-                  </button>
-                </form>
-              </div>
-            </section>
-
-            {/* Expense history */}
-            <section className="mb-6">
-              <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <h2 className="text-lg font-bold mb-2 flex items-center justify-between">
-                  Lịch sử chi tiêu
-                  {sortedExpenses.length > COLLAPSED_COUNT && (
-                    <button
-                      className="ml-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-green-400 text-white font-medium shadow hover:scale-105 active:scale-95 transition-all duration-200 text-sm"
-                      onClick={() => setShowAllExpenses((prev) => !prev)}
-                      aria-expanded={showAllExpenses}
-                      aria-label={showAllExpenses ? "Thu nhỏ" : "Xem tất cả"}
-                      type="button"
-                    >
-                      {showAllExpenses ? "Thu nhỏ" : "Xem tất cả"}
-                    </button>
-                  )}
-                </h2>
-                <div className="overflow-x-auto" style={{WebkitOverflowScrolling: 'touch'}}>
-                  <table
-                    className={`min-w-full text-xs sm:text-sm rounded-xl overflow-hidden ${
-                      isDarkMode ? 'bg-gray-900' : ''
-                    }`}
-                    style={{
-                      minWidth: 600,
-                      width: '100%',
-                      tableLayout: 'auto',
-                    }}
-                  >
-                    <thead>
-                      <tr
-                        className={
-                          isDarkMode
-                            ? 'bg-gradient-to-r from-gray-800 to-gray-700'
-                            : 'bg-gradient-to-r from-blue-100 to-green-100'
-                        }
-                      >
-                        <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Ngày</th>
-                        <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Danh mục</th>
-                        <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Số tiền (VND)</th>
-                        <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Mục đích</th>
-                        <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Vị trí</th>
-                        <th className="px-2 py-2 text-left font-semibold whitespace-nowrap">Hành động</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedExpenses.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={6}
-                            className={`text-center py-6 ${
-                              isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                            }`}
-                          >
-                            Không có chi tiêu nào.
-                          </td>
-                        </tr>
-                      ) : (
-                        (showAllExpenses ? sortedExpenses : sortedExpenses.slice(0, COLLAPSED_COUNT)).map((expense, index) => (
-                          <tr
-                            key={index}
-                            className={`transition-colors duration-200 ${
-                              isDarkMode
-                                ? 'hover:bg-gray-800'
-                                : 'hover:bg-blue-50'
-                            }`}
-                            style={
-                              isDarkMode
-                                ? { backgroundColor: index % 2 === 0 ? '#23263a' : '#181a29' }
-                                : {}
-                            }
-                          >
-                            <td className={`px-2 py-2 ${isDarkMode ? 'text-gray-200' : ''}`}>{expense.date}</td>
-                            <td className={`px-2 py-2 ${isDarkMode ? 'text-gray-200' : ''}`}>{expense.category}</td>
-                            <td className={`px-2 py-2 font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-600'}`}>
-                              {formatVND(expense.amount)}
-                            </td>
-                            <td className={`px-2 py-2 ${isDarkMode ? 'text-gray-200' : ''}`}>{expense.purpose}</td>
-                            <td className={`px-2 py-2 ${isDarkMode ? 'text-gray-200' : ''}`}>{expense.location}</td>
-                            <td className="px-2 py-2">
-                              <button
-                                onClick={() => handleDeleteExpense(expenses.length - 1 - index)}
-                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg font-medium shadow hover:scale-105 active:scale-95 transition-all duration-200
-                                  ${
-                                    isDarkMode
-                                      ? 'bg-gradient-to-r from-red-700 to-pink-700 text-white'
-                                      : 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
-                                  }
-                                `}
-                                aria-label="Xóa chi tiêu"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                  <path d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Xóa
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </section>
-
-            {/* Budget allocations */}
-            <section className="mb-6">
-              <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <h2 className="text-lg font-bold mb-2">Phân bổ ngân sách</h2>
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {categories.map((cat) => (
-                    <div
-                      key={cat.value}
-                      className={`rounded-xl p-3 shadow-md bg-gradient-to-br cursor-pointer`}
-                      onClick={() => toggleVisibility(cat.value)}
-                      style={{
-                        background: isDarkMode
-                          ? `linear-gradient(135deg, ${cat.color}22 0%, #22223b 100%)`
-                          : `linear-gradient(135deg, ${cat.color}22 0%, #fff 100%)`,
-                        color: isDarkMode ? '#fff' : '#22223b',
-                        minWidth: 0,
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      <div className="flex items-center gap-2 mb-1 pointer-events-none">
-                        <span>{cat.icon}</span>
-                        <span className="font-semibold">{cat.label}</span>
-                      </div>
-                      <span className="text-xl font-bold">
-                        {visibility[cat.value] ? formatVND(allocations[cat.value] || 0) : '******** VND'}
-                      </span>
-                    </div>
-                  ))}
                 </section>
               </div>
-            </section>
 
-            {/* Total allocations */}
-            {totalAmount > 0 && (
-              <section className="mb-6">
-                <div 
-                    className="glass-card p-4 rounded-2xl shadow-xl flex flex-col items-center cursor-pointer"
-                    onClick={() => toggleVisibility('totalAllocations')}
-                >
-                  <h2 className="text-lg font-bold mb-1 pointer-events-none">Tổng số tiền phân bổ</h2>
-                  <p className="text-2xl font-extrabold text-gray-700 dark:text-gray-200 mb-1">
-                    {visibility.totalAllocations ? formatVND(totalAmount) : '******** VND'}
-                  </p>
-                  <p className="text-base italic text-gray-500 dark:text-gray-400">
-                    {visibility.totalAllocations ? numberToWords(totalAmount) : '********'}
-                  </p>
+              {/* Right Column: Actions & Allocations */}
+              <div className="flex flex-col gap-8">
+                <div className={`p-1 rounded-[2rem] shadow-2xl ${isDarkMode ? 'bg-gradient-to-b from-gray-700 to-gray-800' : 'bg-gradient-to-b from-blue-100 to-white'}`}>
+                  <ExpenseForm
+                    handleExpenseSubmit={handleExpenseSubmit}
+                    amount={amount} setAmount={setAmount}
+                    category={category} setCategory={setCategory}
+                    purpose={purpose} setPurpose={setPurpose}
+                    location={location} setLocation={setLocation}
+                    date={date} setDate={setDate}
+                    isSubmitting={isSubmitting}
+                    categories={categories}
+                    allocations={allocations}
+                    formatVND={formatVND}
+                    numberToWords={numberToWords}
+                    isDarkMode={isDarkMode}
+                  />
                 </div>
-              </section>
-            )}
-          </>
+
+                <AllocationCards
+                  categories={categories}
+                  visibility={visibility}
+                  toggleVisibility={toggleVisibility}
+                  allocations={allocations}
+                  formatVND={formatVND}
+                  isDarkMode={isDarkMode}
+                />
+
+                {totalAmount > 0 && (
+                  <div
+                    className={`p-6 rounded-3xl shadow-xl cursor-pointer border transition-all duration-300 transform hover:scale-[1.02] ${isDarkMode ? 'bg-gray-800/80 border-gray-700 hover:bg-gray-800' : 'bg-white border-blue-100 hover:bg-gray-50'}`}
+                    onClick={() => toggleVisibility('totalAllocations')}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-bold opacity-60 uppercase tracking-widest">Tổng chi tiêu</h3>
+                      <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500"><TrendingDown size={20} /></div>
+                    </div>
+                    <p className="text-3xl font-black text-blue-600 dark:text-blue-300">
+                      {visibility.totalAllocations ? formatVND(totalAmount) : '••••••••'}
+                    </p>
+                    <p className="text-xs italic opacity-50 mt-1 font-medium">
+                      {visibility.totalAllocations ? numberToWords(totalAmount) : 'Nhấn để xem'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </main>
 
-      {/* Modern glassmorphism and utility classes */}
-   <style>{`
+      {/* Premium Deposit Modal */}
+      <DepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+        newBudget={newBudget}
+        setNewBudget={setNewBudget}
+        handleBudgetSubmit={handleBudgetSubmit}
+        isSubmitting={isSubmitting}
+        isDarkMode={isDarkMode}
+        formatVND={formatVND}
+        numberToWords={numberToWords}
+      />
 
-
-
+      <style>{`
         .glass-card {
-
-
-
           background: rgba(255,255,255,1);
 
 
-
-          backdrop-filter: blur(0px) saturate(1.1);
-
+        backdrop-filter: blur(0px) saturate(1.1);
 
 
-          border: 1.5px solid rgba(200,200,255,0.13);
+
+        border: 1.5px solid rgba(200,200,255,0.13);
 
 
 
@@ -816,7 +419,7 @@ function Expenses() {
 
 
 
-          border: 1.5px solid rgba(80,80,120,0.18);
+        border: 1.5px solid rgba(80,80,120,0.18);
 
 
 
@@ -832,43 +435,43 @@ function Expenses() {
 
 
 
-          padding: 0.7rem 1rem;
+        padding: 0.7rem 1rem;
 
 
 
-          border-radius: 0.8rem;
+        border-radius: 0.8rem;
 
 
 
-          border: 1.5px solid #d1d5db;
+        border: 1.5px solid #d1d5db;
 
 
 
-          background: #fff;
+        background: #fff;
 
 
 
-          font-size: 1.05rem;
+        font-size: 1.05rem;
 
 
 
-          font-weight: 500;
+        font-weight: 500;
 
 
 
-          color: #22223b;
+        color: #22223b;
 
 
 
-          transition: border-color 0.2s, box-shadow 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s;
 
 
 
-          outline: none;
+        outline: none;
 
 
 
-          box-shadow: 0 1px 2px 0 rgba(59,130,246,0.04);
+        box-shadow: 0 1px 2px 0 rgba(59,130,246,0.04);
 
 
 
@@ -880,11 +483,11 @@ function Expenses() {
 
 
 
-          border-color: #3b82f6;
+          border - color: #3b82f6;
 
 
 
-          box-shadow: 0 0 0 2px #3b82f655;
+        box-shadow: 0 0 0 2px #3b82f655;
 
 
 
@@ -900,11 +503,11 @@ function Expenses() {
 
 
 
-          color: #fff;
+        color: #fff;
 
 
 
-          border-color: #374151;
+        border-color: #374151;
 
 
 
@@ -920,43 +523,43 @@ function Expenses() {
 
 
 
-          align-items: center;
+        align-items: center;
 
 
 
-          justify-content: center;
+        justify-content: center;
 
 
 
-          padding: 0.8rem 1.3rem;
+        padding: 0.8rem 1.3rem;
 
 
 
-          border-radius: 0.8rem;
+        border-radius: 0.8rem;
 
 
 
-          font-weight: 700;
+        font-weight: 700;
 
 
 
-          font-size: 1.05rem;
+        font-size: 1.05rem;
 
 
 
-          background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
 
 
 
-          color: #fff;
+        color: #fff;
 
 
 
-          box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10);
+        box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10);
 
 
 
-          transition: background 0.2s, transform 0.1s;
+        transition: background 0.2s, transform 0.1s;
 
 
 
@@ -972,7 +575,7 @@ function Expenses() {
 
 
 
-          cursor: not-allowed;
+        cursor: not-allowed;
 
 
 
@@ -988,7 +591,7 @@ function Expenses() {
 
 
 
-          transform: scale(1.03);
+        transform: scale(1.03);
 
 
 
@@ -1000,7 +603,7 @@ function Expenses() {
 
 
 
-          main, .glass-card { max-width: 100vw !important; }
+          main, .glass - card {max - width: 100vw !important; }
 
 
 
@@ -1012,59 +615,59 @@ function Expenses() {
 
 
 
-          .glass-card { padding: 1rem !important; }
+          .glass - card {padding: 1rem !important; }
 
 
 
-          .input-modern, .btn-modern { font-size: 1.01rem; padding: 0.7rem 1rem; }
+        .input-modern, .btn-modern {font - size: 1.01rem; padding: 0.7rem 1rem; }
 
 
 
-          .text-2xl, .text-3xl { font-size: 1.45rem !important; }
+        .text-2xl, .text-3xl {font - size: 1.45rem !important; }
 
 
 
-          .text-lg, .text-xl { font-size: 1.18rem !important; }
+        .text-lg, .text-xl {font - size: 1.18rem !important; }
 
 
 
-          .rounded-2xl { border-radius: 1.1rem !important; }
+        .rounded-2xl {border - radius: 1.1rem !important; }
 
 
 
-          .rounded-xl { border-radius: 0.8rem !important; }
+        .rounded-xl {border - radius: 0.8rem !important; }
 
 
 
-          .p-4 { padding: 1rem !important; }
+        .p-4 {padding: 1rem !important; }
 
 
 
-          .p-6 { padding: 1.2rem !important; }
+        .p-6 {padding: 1.2rem !important; }
 
 
 
-          .mb-8 { margin-bottom: 1.3rem !important; }
+        .mb-8 {margin - bottom: 1.3rem !important; }
 
 
 
-          .mb-6 { margin-bottom: 1.1rem !important; }
+        .mb-6 {margin - bottom: 1.1rem !important; }
 
 
 
-          .max-w-3xl { max-width: 100vw !important; }
+        .max-w-3xl {max - width: 100vw !important; }
 
 
 
-          .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+        .overflow-x-auto {-webkit - overflow - scrolling: touch; }
 
 
 
-          .glass-card, .input-modern, .btn-modern {
+        .glass-card, .input-modern, .btn-modern {
 
 
 
-            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10) !important;
+          box - shadow: 0 2px 8px 0 rgba(59,130,246,0.10) !important;
 
 
 
@@ -1072,55 +675,39 @@ function Expenses() {
 
 
 
-          /* Title nét căng */
+        /* Title nét căng */
 
 
 
-          .app-title {
+        .app-title {
 
 
 
-            font-size: 1.25rem !important;
+          font - size: 1.25rem !important;
 
 
 
-            font-weight: 900 !important;
+        font-weight: 900 !important;
 
 
 
-            letter-spacing: -0.01em !important;
+        letter-spacing: -0.01em !important;
 
 
 
-            text-shadow: 0 1px 0 #fff, 0 0px 0 #000;
+        text-shadow: 0 1px 0 #fff, 0 0px 0 #000;
 
 
 
-            color: #22223b !important;
+        color: #22223b !important;
 
 
 
-            -webkit-font-smoothing: antialiased !important;
+        -webkit-font-smoothing: antialiased !important;
 
 
 
-            text-rendering: geometricPrecision !important;
-
-
-
-          }
-
-
-
-          .dark .app-title {
-
-
-
-            color: #fff !important;
-
-
-
-            text-shadow: 0 1px 0 #23263a, 0 0px 0 #fff;
+        text-rendering: geometricPrecision !important;
 
 
 
@@ -1128,23 +715,15 @@ function Expenses() {
 
 
 
-          .app-title .title-text {
+        .dark .app-title {
 
 
 
-            font-size: 1.18rem !important;
+          color: #fff !important;
 
 
 
-            font-weight: 900 !important;
-
-
-
-            letter-spacing: -0.01em !important;
-
-
-
-            line-height: 1.1 !important;
+        text-shadow: 0 1px 0 #23263a, 0 0px 0 #fff;
 
 
 
@@ -1152,67 +731,23 @@ function Expenses() {
 
 
 
-          /* Category select mobile style */
+        .app-title .title-text {
 
 
 
-          .category-select-wrapper {
+          font - size: 1.18rem !important;
 
 
 
-            position: relative;
+        font-weight: 900 !important;
 
 
 
-            width: 100%;
+        letter-spacing: -0.01em !important;
 
 
 
-          }
-
-
-
-          .category-select {
-
-
-
-            font-size: 1.08rem !important;
-
-
-
-            font-weight: 600 !important;
-
-
-
-            padding-right: 2.5rem !important;
-
-
-
-            background: #f9fafb !important;
-
-
-
-            border: 1.5px solid #d1d5db !important;
-
-
-
-            color: #22223b !important;
-
-
-
-            appearance: none;
-
-
-
-            -webkit-appearance: none;
-
-
-
-            border-radius: 0.8rem !important;
-
-
-
-            min-height: 2.7rem !important;
+        line-height: 1.1 !important;
 
 
 
@@ -1220,19 +755,19 @@ function Expenses() {
 
 
 
-          .category-select.dark {
+        /* Category select mobile style */
 
 
 
-            background: #23263a !important;
+        .category-select-wrapper {
 
 
 
-            color: #fff !important;
+          position: relative;
 
 
 
-            border: 1.5px solid #374151 !important;
+        width: 100%;
 
 
 
@@ -1240,35 +775,103 @@ function Expenses() {
 
 
 
-          .category-mobile-visual {
+        .category-select {
 
 
 
-            display: flex;
+          font - size: 1.08rem !important;
 
 
 
-            align-items: center;
+        font-weight: 600 !important;
 
 
 
-            gap: 0.5rem;
+        padding-right: 2.5rem !important;
 
 
 
-            margin-top: 0.3rem;
+        background: #f9fafb !important;
 
 
 
-            min-height: 1.5rem;
+        border: 1.5px solid #d1d5db !important;
 
 
 
-            font-size: 1.01rem;
+        color: #22223b !important;
 
 
 
-            font-weight: 600;
+        appearance: none;
+
+
+
+        -webkit-appearance: none;
+
+
+
+        border-radius: 0.8rem !important;
+
+
+
+        min-height: 2.7rem !important;
+
+
+
+          }
+
+
+
+        .category-select.dark {
+
+
+
+          background: #23263a !important;
+
+
+
+        color: #fff !important;
+
+
+
+        border: 1.5px solid #374151 !important;
+
+
+
+          }
+
+
+
+        .category-mobile-visual {
+
+
+
+          display: flex;
+
+
+
+        align-items: center;
+
+
+
+        gap: 0.5rem;
+
+
+
+        margin-top: 0.3rem;
+
+
+
+        min-height: 1.5rem;
+
+
+
+        font-size: 1.01rem;
+
+
+
+        font-weight: 600;
 
 
 
@@ -1284,19 +887,19 @@ function Expenses() {
 
 
 
-          .glass-card { padding: 0.7rem !important; }
+          .glass - card {padding: 0.7rem !important; }
 
 
 
-          .input-modern, .btn-modern { font-size: 0.98rem; padding: 0.6rem 0.8rem; }
+        .input-modern, .btn-modern {font - size: 0.98rem; padding: 0.6rem 0.8rem; }
 
 
 
-          .app-title { font-size: 1.08rem !important; }
+        .app-title {font - size: 1.08rem !important; }
 
 
 
-          .app-title .title-text { font-size: 1.01rem !important; }
+        .app-title .title-text {font - size: 1.01rem !important; }
 
 
 
@@ -1320,27 +923,27 @@ function Expenses() {
 
 
 
-          0% { transform: translateX(0); }
+          0 % { transform: translateX(0); }
 
 
 
-          20% { transform: translateX(-4px); }
+          20% {transform: translateX(-4px); }
 
 
 
-          40% { transform: translateX(4px); }
+        40% {transform: translateX(4px); }
 
 
 
-          60% { transform: translateX(-2px); }
+        60% {transform: translateX(-2px); }
 
 
 
-          80% { transform: translateX(2px); }
+        80% {transform: translateX(2px); }
 
 
 
-          100% { transform: translateX(0); }
+        100% {transform: translateX(0); }
 
 
 
@@ -1356,11 +959,11 @@ function Expenses() {
 
 
 
-          max-width: 100vw;
+          max - width: 100vw;
 
 
 
-          overflow-x: hidden;
+        overflow-x: hidden;
 
 
 
@@ -1376,47 +979,31 @@ function Expenses() {
 
 
 
-          body, .glass-card, .input-modern, .btn-modern, .rounded-xl, .rounded-2xl, .shadow-xl, .shadow, .shadow-md {
+          body, .glass - card, .input - modern, .btn - modern, .rounded - xl, .rounded - 2xl, .shadow-xl, .shadow, .shadow-md {
 
 
 
-            filter: none !important;
+          filter: none !important;
 
 
 
-            backdrop-filter: none !important;
+        backdrop-filter: none !important;
 
 
 
-            background-blur: none !important;
+        background-blur: none !important;
 
 
 
-            -webkit-filter: none !important;
+        -webkit-filter: none !important;
 
 
 
-            -webkit-backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
 
 
 
-            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10) !important;
-
-
-
-          }
-
-
-
-          .glass-card {
-
-
-
-            background: #fff !important;
-
-
-
-            border: 1.5px solid #e5e7eb !important;
+        box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10) !important;
 
 
 
@@ -1424,15 +1011,31 @@ function Expenses() {
 
 
 
-          .dark .glass-card {
+        .glass-card {
 
 
 
-            background: #23263a !important;
+          background: #fff !important;
 
 
 
-            border: 1.5px solid #374151 !important;
+        border: 1.5px solid #e5e7eb !important;
+
+
+
+          }
+
+
+
+        .dark .glass-card {
+
+
+
+          background: #23263a !important;
+
+
+
+        border: 1.5px solid #374151 !important;
 
 
 
@@ -1444,8 +1047,8 @@ function Expenses() {
 
 
 
-      `}</style>
-    </div>
+      `}</style >
+    </div >
   );
 }
 
