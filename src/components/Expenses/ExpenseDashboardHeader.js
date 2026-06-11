@@ -11,64 +11,62 @@ const ExpenseDashboardHeader = ({
     onDeposit
 }) => {
     return (
-        <div className={`relative overflow-hidden p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 ${isDarkMode ? 'bg-slate-900 border border-white/5 shadow-blue-500/5' : 'bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-700'} text-white group`}>
-            {/* Background elements */}
-            <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white opacity-[0.03] rounded-full blur-3xl pointer-events-none group-hover:opacity-[0.05] transition-opacity" />
-            <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-blue-300 opacity-[0.02] rounded-full blur-2xl pointer-events-none" />
+        <div className="relative overflow-hidden p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-lg group">
+            {/* Gold decorative top border */}
+            <div className="absolute top-0 left-0 w-full h-[4px] bg-[var(--accent-gold)]" />
 
             <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 {/* Balance Info */}
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 bg-white/10 w-fit px-4 py-2 rounded-2xl backdrop-blur-md border border-white/10 group-hover:bg-white/15 transition-all">
-                        <Wallet size={18} className="text-yellow-300" />
-                        <span className="text-xs font-bold uppercase tracking-widest opacity-80">Ngân sách hiện tại</span>
+                    <div className="flex items-center gap-3 border border-[var(--border-color)] bg-black px-4 py-2 select-none">
+                        <Wallet size={16} className="text-[var(--accent-gold)]" />
+                        <span className="text-[10px] font-display font-bold uppercase tracking-widest text-[var(--accent-gold)]">
+                            NGÂN SÁCH TRỪ CHI TIÊU
+                        </span>
                         <button
                             onClick={() => toggleVisibility('budgetBalance')}
-                            className="p-1 hover:bg-white/20 rounded-full transition-all active:scale-95"
+                            className="p-1 text-[var(--text-muted)] hover:text-[var(--accent-gold)] transition"
                         >
-                            {visibility.budgetBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+                            {visibility.budgetBalance ? <EyeOff size={15} /> : <Eye size={15} />}
                         </button>
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-5xl font-black tracking-tighter">
+                        <p className="text-4xl md:text-5xl font-mono font-bold text-[var(--text-primary)] tracking-tight">
                             {visibility.budgetBalance ? formatVND(initialBudget) : '••••••••'}
                         </p>
-                        <div className="flex items-center gap-2 text-xs font-medium opacity-70">
-                            <ArrowUpRight size={14} className="text-emerald-400" />
-                            <span>+2.4% so với tháng trước</span>
+                        <div className="flex items-center gap-2 text-xs font-display text-[var(--text-muted)] uppercase tracking-wider">
+                            <ArrowUpRight size={14} className="text-emerald-500" />
+                            <span>Kỷ luật tài sản ổn định</span>
                         </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-[10px] font-bold border border-white/10">JD</div>
-                        <div className="w-8 h-8 rounded-full bg-blue-400/20 backdrop-blur-md flex items-center justify-center text-[10px] font-bold border border-white/10">RF</div>
                     </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="w-full md:w-auto flex flex-col gap-4">
-                    <div className="bg-white/10 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-inner group-hover:border-white/20 transition-all">
-                        <div className="flex items-center justify-between gap-8 mb-3">
-                            <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Đã chi tiêu</span>
-                            <TrendingDown size={14} className="text-rose-400" />
+                {/* Quick Actions / Spent */}
+                <div className="w-full md:w-auto flex flex-col sm:flex-row md:flex-col gap-4">
+                    <div className="border border-[var(--border-color)] p-5 bg-[rgba(var(--accent-gold-rgb),0.02)] min-w-[200px]">
+                        <div className="flex items-center justify-between gap-8 mb-2">
+                            <span className="text-[10px] font-display font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                                TỔNG TIÊU DÙNG
+                            </span>
+                            <TrendingDown size={14} className="text-red-500" />
                         </div>
-                        <p className="text-xl font-black tracking-tight">
+                        <p className="text-xl font-mono font-bold text-[var(--text-primary)]">
                             {visibility.budgetBalance ? formatVND(totalExpenses) : '••••••••'}
                         </p>
                     </div>
 
                     <button
                         onClick={onDeposit}
-                        className={`w-full py-3 font-bold rounded-xl transition-all active:scale-95 shadow-lg ${isDarkMode ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-white text-blue-600 hover:bg-opacity-90'}`}
+                        className="btn-gold-primary py-3.5 px-6 text-xs uppercase tracking-widest font-bold w-full"
                     >
-                        Nạp thêm tiền
+                        Nạp thêm ngân sách
                     </button>
                 </div>
             </div>
 
-            <div className="absolute bottom-4 right-8 opacity-20 text-[10px] font-bold tracking-[0.2em] uppercase pointer-events-none italic">
-                Rockefeller Gold Member
+            <div className="absolute bottom-3 right-5 opacity-10 text-[9px] font-display font-bold tracking-[0.2em] uppercase pointer-events-none italic">
+                Rockefeller Empire Treasury
             </div>
         </div>
     );

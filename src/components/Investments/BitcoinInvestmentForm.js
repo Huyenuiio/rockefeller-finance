@@ -2,13 +2,15 @@ import React from 'react';
 
 const BitcoinInvestmentForm = ({ bitcoinDetail, setBitcoinDetail, bitcoinExchanges, creating }) => {
     return (
-        <div className="mb-3">
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Giá Bitcoin (tại thời điểm mua - USD/VND)</label>
+        <div className="space-y-4 border-t border-[var(--border-color)] pt-4 mt-4">
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    GIÁ BITCOIN TẠI THỜI ĐIỂM ỦY THÁC (USD/VND)
+                </label>
                 <input
                     type="number"
                     min={0}
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input font-mono text-xs py-2"
                     placeholder="Nhập giá Bitcoin"
                     value={bitcoinDetail.price}
                     onChange={(e) =>
@@ -20,10 +22,12 @@ const BitcoinInvestmentForm = ({ bitcoinDetail, setBitcoinDetail, bitcoinExchang
                     disabled={creating}
                 />
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Sàn giao dịch</label>
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    SÀN GIAO DỊCH LƯU KÝ
+                </label>
                 <select
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2 bg-[var(--bg-secondary)]"
                     value={bitcoinDetail.exchange}
                     onChange={(e) =>
                         setBitcoinDetail((prev) => ({
@@ -41,11 +45,13 @@ const BitcoinInvestmentForm = ({ bitcoinDetail, setBitcoinDetail, bitcoinExchang
                     ))}
                 </select>
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Địa chỉ ví (nếu có)</label>
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    ĐỊA CHỈ VÍ LẠNH / VÍ LƯU TRỮ
+                </label>
                 <input
                     type="text"
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input font-mono text-xs py-2"
                     placeholder="Nhập địa chỉ ví Bitcoin"
                     value={bitcoinDetail.wallet}
                     onChange={(e) =>

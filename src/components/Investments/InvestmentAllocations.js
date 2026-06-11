@@ -1,64 +1,50 @@
 import React from 'react';
+import { BookOpen, ShieldAlert } from 'lucide-react';
 
 const InvestmentAllocations = ({ allocations, formatVND, numberToWords }) => {
     return (
         <section className="mb-6">
-            <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <h2 className="text-lg font-bold mb-2">Phân bổ ngân sách</h2>
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div
-                        className="flex flex-col items-start justify-center p-3 rounded-xl shadow bg-white dark:bg-gray-800"
-                        style={{
-                            borderLeft: `6px solid #f59e42`,
-                            minHeight: 90,
-                        }}
-                    >
-                        <div className="flex items-center gap-2 mb-1">
-                            <span style={{ fontSize: "1.5rem" }}>📚</span>
-                            <span
-                                style={{
-                                    color: "#f59e42",
-                                    fontWeight: 700,
-                                    fontSize: "1.08rem",
-                                }}
-                            >
-                                Đầu tư bản thân
-                            </span>
-                        </div>
-                        <div className="text-2xl font-extrabold text-gray-700 dark:text-gray-200 mb-1">
+            <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-3 uppercase">
+                PHÂN BỔ QUỸ TÀI SẢN ĐẦU TƯ
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Self Investment */}
+                <div className="p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative shadow-sm">
+                    <div className="absolute top-0 left-0 w-[4px] h-full bg-[#f59e42]" />
+                    <div className="flex items-center gap-2 mb-2 pl-2">
+                        <BookOpen size={16} className="text-[#f59e42]" />
+                        <span className="text-xs font-display font-bold tracking-wider text-[#f59e42] uppercase">
+                            Đầu tư bản thân (15%)
+                        </span>
+                    </div>
+                    <div className="pl-2">
+                        <div className="text-2xl font-mono font-bold text-[var(--text-primary)]">
                             {formatVND(allocations.selfInvestment)}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        <div className="text-[10px] font-display uppercase tracking-wider text-[var(--text-muted)] mt-1">
                             {numberToWords(allocations.selfInvestment)}
                         </div>
                     </div>
-                    <div
-                        className="flex flex-col items-start justify-center p-3 rounded-xl shadow bg-white dark:bg-gray-800"
-                        style={{
-                            borderLeft: `6px solid #a855f7`,
-                            minHeight: 90,
-                        }}
-                    >
-                        <div className="flex items-center gap-2 mb-1">
-                            <span style={{ fontSize: "1.5rem" }}>🛡️</span>
-                            <span
-                                style={{
-                                    color: "#a855f7",
-                                    fontWeight: 700,
-                                    fontSize: "1.08rem",
-                                }}
-                            >
-                                Dự phòng linh hoạt
-                            </span>
-                        </div>
-                        <div className="text-2xl font-extrabold text-gray-700 dark:text-gray-200 mb-1">
+                </div>
+
+                {/* Emergency */}
+                <div className="p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative shadow-sm">
+                    <div className="absolute top-0 left-0 w-[4px] h-full bg-[#a855f7]" />
+                    <div className="flex items-center gap-2 mb-2 pl-2">
+                        <ShieldAlert size={16} className="text-[#a855f7]" />
+                        <span className="text-xs font-display font-bold tracking-wider text-[#a855f7] uppercase">
+                            Dự phòng linh hoạt (10%)
+                        </span>
+                    </div>
+                    <div className="pl-2">
+                        <div className="text-2xl font-mono font-bold text-[var(--text-primary)]">
                             {formatVND(allocations.emergency)}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        <div className="text-[10px] font-display uppercase tracking-wider text-[var(--text-muted)] mt-1">
                             {numberToWords(allocations.emergency)}
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
         </section>
     );

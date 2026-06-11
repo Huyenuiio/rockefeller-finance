@@ -5,55 +5,52 @@ const ConfirmModal = ({ showConfirm, isDarkMode, isSubmitting, closeConfirm, han
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm animate-in fade-in duration-200"
             aria-modal="true"
             role="dialog"
         >
             <div
-                className={`w-[95vw] max-w-sm rounded-2xl p-6 shadow-2xl glass-card-modern border
-          ${isDarkMode ? 'bg-gray-900/95 border-gray-700' : 'bg-white/95 border-gray-200'}
-          animate-pop-in
-        `}
+                className="w-[95vw] max-w-sm border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 relative shadow-2xl animate-in zoom-in-95 duration-200"
             >
-                <h4 className="text-xl font-bold mb-2 text-center">
+                {/* Accent Top Line */}
+                <div className="absolute top-0 left-0 w-full h-[4px] bg-[var(--accent-gold)]" />
+
+                <h4 className="text-sm font-display font-bold uppercase tracking-wider text-[var(--accent-gold)] text-center mb-3">
                     {showConfirm.type === 'deleteAccount'
-                        ? 'Xác nhận xóa tài khoản'
-                        : 'Xác nhận xóa toàn bộ số tiền'}
+                        ? 'XÁC NHẬN XÓA TÀI KHOẢN'
+                        : 'XÁC NHẬN ĐẶT LẠI NGÂN QUỸ'}
                 </h4>
-                <p className="mb-6 text-center text-base">
+                <p className="mb-6 text-center text-xs text-[var(--text-muted)] leading-relaxed">
                     {showConfirm.type === 'deleteAccount'
-                        ? 'Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác!'
-                        : 'Bạn có chắc chắn muốn xóa toàn bộ số tiền? Dữ liệu ngân sách sẽ về 0!'}
+                        ? 'Hành động này sẽ xóa vĩnh viễn tài khoản của bạn khỏi hệ thống. Thao tác không thể hoàn tác!'
+                        : 'Toàn bộ số dư ngân quỹ sẽ được đưa về giá trị khởi điểm 0 VND. Thao tác không thể hoàn tác!'}
                 </p>
                 <div className="flex gap-3">
                     <button
                         onClick={closeConfirm}
-                        className="flex-1 px-4 py-2 rounded-xl font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                        className="flex-1 btn-gold-outline py-2.5 text-xs font-display font-bold uppercase tracking-wider"
                         disabled={isSubmitting}
                     >
-                        Hủy
+                        HỦY BỎ
                     </button>
                     <button
                         onClick={() => handleAction(showConfirm.type)}
-                        className={`flex-1 px-4 py-2 rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2
-              ${showConfirm.type === 'deleteAccount'
-                                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 focus:ring-red-400'
-                                : 'bg-gradient-to-r from-orange-400 to-yellow-400 text-white hover:from-orange-500 hover:to-yellow-500 focus:ring-orange-400'
+                        className={`flex-1 py-2.5 text-xs font-display font-bold uppercase tracking-wider transition-all
+                            ${showConfirm.type === 'deleteAccount'
+                                ? 'bg-red-600 text-white hover:bg-red-700'
+                                : 'bg-amber-600 text-white hover:bg-amber-700'
                             }
-              ${isSubmitting ? 'opacity-60 cursor-not-allowed' : ''}
-            `}
+                            ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
                             <span className="flex items-center justify-center gap-2">
-                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                                Đang xử lý...
+                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent" />
+                                XỬ LÝ...
                             </span>
                         ) : (
-                            showConfirm.type === 'deleteAccount' ? 'Xóa tài khoản' : 'Xóa toàn bộ số tiền'
+                            showConfirm.type === 'deleteAccount' ? 'XÓA TÀI KHOẢN' : 'ĐẶT LẠI'
                         )}
                     </button>
                 </div>

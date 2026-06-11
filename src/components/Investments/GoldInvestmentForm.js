@@ -2,11 +2,13 @@ import React from 'react';
 
 const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, creating }) => {
     return (
-        <div className="mb-3">
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Loại vàng</label>
+        <div className="space-y-4 border-t border-[var(--border-color)] pt-4 mt-4">
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    LOẠI VÀNG
+                </label>
                 <select
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2 bg-[var(--bg-secondary)]"
                     value={goldDetail.goldType}
                     onChange={(e) =>
                         setGoldDetail((prev) => ({
@@ -24,7 +26,7 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     ))}
                 </select>
                 {goldDetail.goldType && (
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-[10px] font-display uppercase tracking-wider text-[var(--accent-gold)] mt-1.5">
                         {
                             goldTypes.find((g) => g.value === goldDetail.goldType)
                                 ?.desc
@@ -32,16 +34,17 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     </div>
                 )}
             </div>
-            <div className="mb-2 flex gap-2">
+
+            <div className="flex gap-4">
                 <div className="flex-1">
-                    <label className="block font-medium mb-1">
-                        Trọng lượng
+                    <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                        TRỌNG LƯỢNG
                     </label>
                     <input
                         type="number"
                         min={0}
                         step={0.01}
-                        className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                        className="rockefeller-input font-mono text-xs py-2"
                         placeholder="Nhập trọng lượng"
                         value={goldDetail.weight}
                         onChange={(e) =>
@@ -54,11 +57,11 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     />
                 </div>
                 <div>
-                    <label className="block font-medium mb-1 invisible">
-                        Đơn vị
+                    <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                        ĐƠN VỊ CHUẨN
                     </label>
                     <select
-                        className="input-modern px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                        className="rockefeller-input text-xs py-2 bg-[var(--bg-secondary)]"
                         value={goldDetail.weightUnit}
                         onChange={(e) =>
                             setGoldDetail((prev) => ({
@@ -69,14 +72,17 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                         disabled={creating}
                     >
                         <option value="gram">Gram (g)</option>
-                        <option value="luong">Lượng (1 lượng = 37,5g)</option>
+                        <option value="luong">Lượng (37.5g)</option>
                     </select>
                 </div>
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Thương hiệu vàng</label>
+
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    THƯƠNG HIỆU VÀNG BẢO CHỨNG
+                </label>
                 <select
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2 bg-[var(--bg-secondary)]"
                     value={goldDetail.brand}
                     onChange={(e) =>
                         setGoldDetail((prev) => ({
@@ -94,11 +100,14 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     ))}
                 </select>
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Chứng nhận & xuất xứ</label>
+
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    CHỨNG NHẬN & XUẤT XỨ
+                </label>
                 <input
                     type="text"
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2"
                     placeholder="Ví dụ: SJC, PNJ, ... (nếu có)"
                     value={goldDetail.certificate}
                     onChange={(e) =>
@@ -110,11 +119,14 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     disabled={creating}
                 />
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Hình thức vàng</label>
+
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    HÌNH THỨC VẬT LÝ
+                </label>
                 <input
                     type="text"
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2"
                     placeholder="Nhẫn vàng, dây chuyền, miếng vàng, ..."
                     value={goldDetail.form}
                     onChange={(e) =>
@@ -126,10 +138,13 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     disabled={creating}
                 />
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Biến động thị trường</label>
+
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    GHI CHÚ DIỄN BIẾN THỊ TRƯỜNG
+                </label>
                 <textarea
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2 min-h-[60px]"
                     placeholder="Ghi chú về diễn biến giá vàng gần đây (nếu có)"
                     value={goldDetail.marketNote}
                     onChange={(e) =>
@@ -141,11 +156,14 @@ const GoldInvestmentForm = ({ goldDetail, setGoldDetail, goldTypes, goldBrands, 
                     disabled={creating}
                 />
             </div>
-            <div className="mb-2">
-                <label className="block font-medium mb-1">Chi phí gia công (nếu có)</label>
+
+            <div>
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                    CHI PHÍ GIA CÔNG PHỤ TRỢ (VND)
+                </label>
                 <input
                     type="text"
-                    className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                    className="rockefeller-input text-xs py-2"
                     placeholder="Nhập chi phí gia công"
                     value={goldDetail.processingFee}
                     onChange={(e) =>

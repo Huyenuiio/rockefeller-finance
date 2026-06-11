@@ -14,37 +14,44 @@ const InvestmentForm = ({
 }) => {
     return (
         <section className="mb-8">
-            <div className="glass-card p-4 rounded-2xl shadow-xl">
-                <h2 className="text-lg font-bold mb-2">Tạo giao dịch đầu tư mới</h2>
+            <div className="p-6 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative">
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-gold)]" />
+                <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-4 uppercase">
+                    ỦY THÁC ĐẦU TƯ MỚI
+                </h2>
                 <form onSubmit={handleCreateInvestment}>
-                    <div className="mb-3">
-                        <label className="block font-medium mb-1">Số tiền đầu tư</label>
+                    <div className="mb-4">
+                        <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                            SỐ TIỀN ỦY THÁC (VND)
+                        </label>
                         <input
                             type="number"
                             min={0}
                             step={1000}
-                            className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            className="rockefeller-input font-mono text-sm py-2.5"
                             placeholder="Nhập số tiền (VND)"
                             value={inputAmount}
                             onChange={(e) => setInputAmount(e.target.value)}
                             disabled={creating}
+                            required
                         />
                     </div>
-                    <div className="mb-3">
-                        <label className="block font-medium mb-1">Chọn loại đầu tư</label>
-                        <div className="flex gap-4 flex-wrap mt-2">
+                    <div className="mb-4">
+                        <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                            PHƯƠNG THỨC ĐẦU TƯ
+                        </label>
+                        <div className="flex gap-3 flex-wrap mt-2">
                             {investmentTypes.map((type) => (
                                 <button
                                     type="button"
                                     key={type.value}
-                                    className={`px-3 py-2 rounded-lg border font-semibold flex items-center gap-2 transition-all ${selectedType === type.value
-                                        ? "bg-blue-500 text-white border-blue-500"
-                                        : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700"
+                                    className={`px-4 py-2 border text-xs font-display font-bold uppercase tracking-wider transition-all select-none ${selectedType === type.value
+                                        ? "bg-[var(--accent-gold)] text-black border-[var(--accent-gold)]"
+                                        : "bg-black text-[var(--text-muted)] border-[var(--border-color)] hover:border-[var(--accent-gold)] hover:text-[var(--text-primary)]"
                                         }`}
                                     onClick={() => setSelectedType(type.value)}
                                     disabled={creating}
                                 >
-                                    <span>{type.icon}</span>
                                     {type.label}
                                 </button>
                             ))}
@@ -71,33 +78,30 @@ const InvestmentForm = ({
                     )}
 
                     {selectedType === "selfInvestment" && (
-                        <div className="mb-3">
-                            <label className="block font-medium mb-1">Thông tin đầu tư bản thân</label>
+                        <div className="mb-4">
+                            <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1.5">
+                                CHI TIẾT ĐẦU TƯ BẢN THÂN
+                            </label>
                             <textarea
-                                className="input-modern w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700"
+                                className="rockefeller-input text-xs py-2.5 min-h-[80px]"
                                 placeholder="Ví dụ: Khóa học lập trình, sách kỹ năng, ..."
                                 value={selfInvestDetail}
                                 onChange={(e) => setSelfInvestDetail(e.target.value)}
                                 disabled={creating}
+                                required
                             />
                         </div>
                     )}
 
-                    <div className="mt-4">
+                    <div className="mt-6">
                         <button
                             type="submit"
-                            className={`w-full py-3 rounded-xl font-bold text-white transition-all shadow-lg ${creating
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95"
-                                }`}
+                            className="w-full btn-gold-primary py-3.5 text-xs font-bold uppercase tracking-widest"
                             disabled={creating}
                         >
                             {creating ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
+                                    <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent" />
                                     Đang xử lý...
                                 </span>
                             ) : "Xác nhận đầu tư"}

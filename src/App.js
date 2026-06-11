@@ -52,16 +52,9 @@ const ProtectedRoute = ({ children }) => {
 
 function AppLayout() {
   const { isDarkMode } = useContext(FinanceContext);
-  // Layout chung cho các trang yêu cầu đăng nhập:
-  // Sử dụng flex nhưng cần lưu ý Sidebar đang là 'fixed'
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950' : 'bg-gray-100'}`}>
+    <div className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <Sidebar />
-      {/* 
-        Main content container. 
-        - md:ml-[72px] or md:ml-[270px] based on sidebar width 
-        - pt-20 on mobile to avoid overlap with floating menu button
-      */}
       <div
         className="flex-1 flex flex-col transition-all duration-500 ease-[cubic-bezier(.77,0,.18,1)]"
         style={{ paddingLeft: 'var(--sidebar-width, 0px)' }}
@@ -85,6 +78,7 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId="578342193292-7u10o2pleqmqpni3e8cl829e9f6oqhqg.apps.googleusercontent.com">
       <FinanceProvider>
+        <div className="grain-overlay" />
         <Router>
           <Routes>
             {/* Trang login độc lập, không dùng sidebar, navbar */}
@@ -99,9 +93,6 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
-
-            {/* Nếu muốn redirect trang root, có thể chuyển thành: */}
-            {/* <Route path="/" element={<Navigate to="/home" replace />} /> */}
           </Routes>
         </Router>
       </FinanceProvider>

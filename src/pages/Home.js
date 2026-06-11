@@ -292,44 +292,41 @@ function Home() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-slate-950 text-white' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100 text-gray-900'}`}
+      className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]"
       ref={mainRef}
     >
-      <header className="sticky top-0 z-40 bg-opacity-80 backdrop-blur-md shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3 md:py-4 max-w-7xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-2 font-quicksand">
-            <svg width="28" height="28" viewBox="0 0 32 32" aria-label="dashboard" fill="none">
-              <circle cx="16" cy="16" r="14" fill="#2563eb" fillOpacity="0.12" />
-              <circle cx="16" cy="16" r="14" stroke="#2563eb" strokeWidth="2" />
-              <path d="M10 20v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" />
-              <rect x="13" y="14" width="6" height="6" rx="1" fill="#2563eb" fillOpacity="0.18" />
-            </svg>
-            Bảng điều khiển
+      <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
+        <div className="flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+          <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
+            <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
+              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+            </div>
+            BẢNG ĐIỀU KHIỂN
           </h1>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-2 md:px-6 py-4 md:py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {isLoading && (
           <div className="flex justify-center items-center py-10">
-            <svg className="animate-spin h-10 w-10 text-blue-500" viewBox="0 0 24 24">
+            <svg className="animate-spin h-10 w-10 text-[var(--accent-gold)]" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
           </div>
         )}
         {error && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow animate-fade-in  font-quicksand">{error}</div>
+          <div className="mb-4 p-4 border border-red-500/30 bg-red-500/5 text-red-500 font-sans text-sm">{error}</div>
         )}
         {successMessage && (
-          <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg shadow animate-fade-in font-quicksand">{successMessage}</div>
+          <div className="mb-4 p-4 border border-green-500/30 bg-green-500/5 text-green-500 font-sans text-sm">{successMessage}</div>
         )}
 
         {!isLoading && (
           <>
-            <div className="mb-6 p-4 rounded-xl shadow bg-gradient-to-r from-blue-200 via-blue-100 to-blue-50 text-blue-900 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800">
-              <p className="italic text-center text-base md:text-lg font-medium font-quicksand">
-                <span className="font-bold text-blue-600 dark:text-blue-300">*38 Lá Thư*:</span> "Kỷ luật tài chính bắt đầu từ việc theo dõi chi tiêu hàng ngày. Hãy kiểm tra ngân sách của bạn thường xuyên!"
+            <div className="mb-8 p-4 border border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)]">
+              <p className="italic text-center text-sm text-[var(--text-secondary)] font-sans">
+                <span className="font-bold font-display text-[var(--accent-gold)] tracking-wider">38 LÁ THƯ:</span> "Kỷ luật tài chính bắt đầu từ việc theo dõi chi tiêu hàng ngày. Hãy kiểm tra ngân sách của bạn thường xuyên!"
               </p>
             </div>
 
@@ -385,20 +382,18 @@ function Home() {
         )}
       </main>
 
-      {
-        showScrollTop && (
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
-            aria-label="Lên đầu trang"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7-7" />
-            </svg>
-          </button>
-        )
-      }
-    </div >
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 z-50 p-3 bg-[var(--accent-gold)] text-black border border-black shadow-lg hover:bg-[var(--accent-gold-hover)] transition focus:outline-none rounded-none"
+          aria-label="Lên đầu trang"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7-7" />
+          </svg>
+        </button>
+      )}
+    </div>
   );
 }
 

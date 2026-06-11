@@ -1,30 +1,31 @@
 import React from 'react';
 import { Doughnut } from 'react-chartjs-2';
+import { PieChart } from 'lucide-react';
 
 const AllocationChart = ({ chartData, chartOptions, recentTransactionsForChart, formatVND, isDarkMode }) => {
+    const totalAmount = recentTransactionsForChart.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+
     return (
-        <section className="mb-8 font-quicksand">
-            <h3 className="text-lg font-bold mb-3 flex items-center gap-2 ">
-                <svg width="22" height="22" viewBox="0 0 24 24" aria-label="chart" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#2563eb" fillOpacity="0.10" />
-                    <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="2" />
-                    <path d="M12 6v6l4 2" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Phân tích chi tiêu gần đây
+        <section className="mb-8">
+            <h3 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-3 flex items-center gap-2 uppercase">
+                <PieChart size={16} />
+                PHÂN TÍCH CHI TIÊU THỰC TẾ
             </h3>
-            <div className={`p-4 rounded-2xl shadow-lg bg-gradient-to-br font-quicksand ${isDarkMode ? 'from-gray-800 via-gray-900 to-gray-800' : 'from-white via-blue-50 to-blue-100'} transition`}>
+            <div className="p-6 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative shadow-sm">
                 {recentTransactionsForChart.length > 0 ? (
                     <div className="relative" style={{ height: '260px', minHeight: '200px' }}>
                         <Doughnut data={chartData} options={chartOptions} />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none font-quicksand">
-                            <span className="text-xs text-gray-500 dark:text-gray-300">Tổng</span>
-                            <span className="text-lg font-bold text-blue-600 dark:text-blue-300">{formatVND(
-                                recentTransactionsForChart.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0)
-                            )}</span>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-[10px] font-sans font-bold tracking-widest uppercase text-[var(--text-muted)]">Tổng chi</span>
+                            <span className="text-base font-mono font-bold text-[var(--text-primary)]">
+                                {formatVND(totalAmount)}
+                            </span>
                         </div>
                     </div>
                 ) : (
-                    <p className="text-gray-600 dark:text-gray-300 text-center">Chưa có giao dịch để phân tích.</p>
+                    <p className="text-[var(--text-muted)] text-xs text-center py-12 font-sans font-bold uppercase tracking-widest">
+                        Chưa có giao dịch trong kỳ để phân tích.
+                    </p>
                 )}
             </div>
         </section>

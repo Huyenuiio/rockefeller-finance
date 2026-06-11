@@ -5,10 +5,9 @@ import toast from 'react-hot-toast';
 import { useContext } from 'react';
 import { FinanceContext } from '../contexts/FinanceContext';
 
-// Responsive, modern Sidebar with improved mobile UX
+// Responsive, modern Sidebar with Rockefeller aesthetic (rigid, standard gold & obsidian)
 const Sidebar = memo(() => {
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    // On mobile, always expanded
     if (window.innerWidth < 768) return false;
     return localStorage.getItem('sidebarCollapsed') === 'true';
   });
@@ -19,41 +18,23 @@ const Sidebar = memo(() => {
   const navigate = useNavigate();
   const sidebarRef = useRef(null);
 
-  // Responsive: update isMobile on resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      // On mobile, always expanded
       if (window.innerWidth < 768) setIsCollapsed(false);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Color palette for 2025 look
   const colors = {
-    primary: '#2563eb', // blue-600
-    secondary: '#60a5fa', // blue-400
-    tertiary: '#f1f5f9', // slate-100
-    background: isDarkMode ? 'rgba(2, 6, 23, 0.95)' : 'rgba(255,255,255,0.85)',
-    glass: isDarkMode
-      ? 'bg-gradient-to-br from-slate-950/90 via-slate-900/80 to-slate-950/70'
-      : 'bg-gradient-to-br from-white/80 via-blue-50/70 to-white/60',
-    border: isDarkMode ? 'border-white/5' : 'border-blue-200/60',
-    shadow: isDarkMode ? 'shadow-black/40' : 'shadow-blue-200/40',
-    navItemActiveBg: isDarkMode
-      ? 'bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800'
-      : 'bg-gradient-to-r from-blue-600 to-blue-400',
-    navItemInactiveBg: isDarkMode
-      ? 'hover:bg-white/5'
-      : 'hover:bg-blue-100/80',
-    navItemInactiveText: isDarkMode
-      ? 'text-slate-400'
-      : 'text-gray-700',
-    navItemActiveText: 'text-white',
-    navItemHoverText: isDarkMode
-      ? 'hover:text-white'
-      : 'hover:text-blue-700',
+    background: 'var(--bg-secondary)',
+    border: 'border-[var(--border-color)]',
+    navItemActiveBg: 'bg-[var(--accent-gold)]',
+    navItemActiveText: 'text-black font-bold',
+    navItemInactiveText: 'text-[var(--text-secondary)]',
+    navItemHoverText: 'hover:text-[var(--accent-gold)]',
+    navItemHoverBg: 'hover:bg-[rgba(var(--accent-gold-rgb),0.06)]',
   };
 
   useEffect(() => {
@@ -61,10 +42,6 @@ const Sidebar = memo(() => {
       localStorage.setItem('sidebarCollapsed', isCollapsed);
     }
   }, [isCollapsed, isMobile]);
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', isDarkMode);
-  }, [isDarkMode]);
 
   const menuItems = [
     { path: '/home', label: 'Trang chủ', icon: Home },
@@ -92,24 +69,19 @@ const Sidebar = memo(() => {
   };
 
   const toggleSidebar = () => {
-    // On mobile, don't allow collapse
     if (isMobile) return;
     setIsCollapsed((c) => !c);
   };
   const toggleMobileMenu = () => setIsMobileMenuOpen((m) => !m);
 
-  // Helper: close sidebar on mobile when navigating
   const handleMenuItemClick = () => {
     if (isMobile) setIsMobileMenuOpen(false);
   };
 
-  // Close sidebar on route change (mobile)
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) setIsMobileMenuOpen(false);
-    // eslint-disable-next-line
   }, [location.pathname, isMobile]);
 
-  // Prevent scroll when sidebar is open on mobile
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -121,7 +93,6 @@ const Sidebar = memo(() => {
     };
   }, [isMobileMenuOpen, isMobile]);
 
-  // Close sidebar if click outside (on mobile)
   useEffect(() => {
     if (!isMobileMenuOpen || !isMobile) return;
     const handleClickOutside = (e) => {
@@ -133,51 +104,38 @@ const Sidebar = memo(() => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen, isMobile]);
 
-  // Animation classes for 2025 feel
   const sidebarAnim = `
     transition-all duration-500 ease-[cubic-bezier(.77,0,.18,1)]
     will-change-transform
     backdrop-blur-xl
-    ${colors.glass}
-    ${colors.shadow}
-    border-r-2 ${colors.border}
+    border-r ${colors.border}
   `;
 
-  // Modern nav item style
   const navItemBase =
-    'group flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-base transition-all duration-200 cursor-pointer select-none';
-  // Use explicit bg/text for dark mode fix
+    'group flex items-center gap-3 px-4 py-3 rounded-none font-medium text-base transition-all duration-200 cursor-pointer select-none';
+
   const navItemActive = `
     ${colors.navItemActiveBg} ${colors.navItemActiveText}
-    shadow-lg scale-[1.04] border border-blue-300/30
+    shadow-sm border-l-4 border-black
   `;
   const navItemInactive = `
-    ${colors.navItemInactiveText} ${colors.navItemInactiveBg} ${colors.navItemHoverText}
+    ${colors.navItemInactiveText} ${colors.navItemHoverBg} ${colors.navItemHoverText}
     transition-colors
   `;
 
-  // Modern mobile menu button
   const mobileMenuBtn =
-    'md:hidden fixed top-4 left-4 z-[100] p-2 rounded-full bg-white/80 dark:bg-gray-900/80 shadow-lg border border-blue-200/40 dark:border-gray-700/40 backdrop-blur-lg transition-all duration-200 hover:scale-110';
+    'md:hidden fixed top-4 left-4 z-[100] p-2 rounded-none bg-[var(--bg-secondary)] shadow-lg border border-[var(--border-color)] backdrop-blur-lg transition-all duration-200 hover:scale-105';
 
-  // Modern collapse/expand button
   const collapseBtn =
-    'p-1.5 rounded-full hover:bg-blue-100/80 dark:hover:bg-gray-800/80 text-blue-600 dark:text-blue-300 transition-all duration-200 shadow-sm border border-blue-200/40 dark:border-gray-700/40';
+    'p-1.5 rounded-none hover:bg-[rgba(var(--accent-gold-rgb),0.1)] text-[var(--accent-gold)] transition-all duration-200 border border-[var(--border-color)]';
 
-  // Modern dark mode button
-  const darkModeBtn =
-    'w-full p-2 mb-2 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 transition-all duration-200 shadow-md hover:scale-105';
-
-  // Modern logout button
   const logoutBtn =
-    'flex items-center gap-3 p-2 rounded-xl w-full transition-all duration-200 bg-gradient-to-r from-red-500/90 to-pink-500/90 text-white hover:from-red-600 hover:to-pink-600 shadow-md hover:scale-105';
+    'flex items-center gap-3 p-2.5 border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-red-500 hover:border-red-500 transition-all duration-200 w-full rounded-none';
 
-  // Sidebar width
   const sidebarWidth = isCollapsed && !isMobile ? 72 : isMobile ? '80vw' : 270;
   const sidebarMinWidth = isCollapsed && !isMobile ? 72 : isMobile ? 0 : 270;
   const sidebarMaxWidth = isCollapsed && !isMobile ? 72 : isMobile ? '90vw' : 270;
 
-  // Sync with CSS variable for AppLayout
   useEffect(() => {
     const root = document.documentElement;
     if (isMobile) {
@@ -195,8 +153,6 @@ const Sidebar = memo(() => {
         onClick={toggleMobileMenu}
         aria-label={isMobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
         style={{
-          boxShadow: '0 4px 24px 0 rgba(33,113,181,0.10)',
-          border: '1.5px solid #e0e7ef',
           display: isMobile ? 'block' : 'none',
         }}
       >
@@ -220,26 +176,21 @@ const Sidebar = memo(() => {
           minWidth: sidebarMinWidth,
           maxWidth: sidebarMaxWidth,
           background: colors.background,
-          boxShadow: isDarkMode
-            ? '0 8px 32px 0 rgba(33,113,181,0.18)'
-            : '0 8px 32px 0 rgba(33,113,181,0.10)',
-          borderRight: isDarkMode ? '2px solid #33415580' : '2px solid #e0e7ef99',
+          boxShadow: '4px 0 24px rgba(0,0,0,0.15)',
           transition: 'all 0.5s cubic-bezier(.77,0,.18,1)',
         }}
         aria-label="Sidebar navigation"
       >
         {/* Logo & Collapse */}
-        <div className="flex items-center justify-between px-4 py-5">
+        <div className="flex items-center justify-between px-4 py-5 border-b border-[var(--border-color)]">
           {(!isCollapsed || isMobile) && (
             <div className="flex items-center gap-3">
-              <img
-                src="/logo.png"
-                alt="Rockefeller Finance"
-                className="w-10 h-10 rounded-full shadow-md border border-blue-200/60 dark:border-gray-700/60"
-                draggable={false}
-              />
-              <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-pink-500 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg">
-                Rockefeller
+              {/* Monogram Monolith R logo */}
+              <div className="w-10 h-10 border border-[var(--accent-gold)] flex items-center justify-center bg-black select-none">
+                <span className="font-display font-bold text-[var(--accent-gold)] text-xl">R</span>
+              </div>
+              <span className="text-xl font-display font-bold tracking-wider text-[var(--accent-gold)]">
+                ROCKEFELLER
               </span>
             </div>
           )}
@@ -251,28 +202,25 @@ const Sidebar = memo(() => {
               aria-label={isCollapsed ? 'Mở sidebar' : 'Thu gọn sidebar'}
               tabIndex={0}
             >
-              {isCollapsed ? <Menu size={22} /> : <X size={22} />}
+              {isCollapsed ? <Menu size={20} /> : <X size={20} />}
             </button>
           )}
         </div>
+
         {/* Quote */}
         {(!isCollapsed || isMobile) && (
-          <div
-            className={`px-4 py-3 mb-3 mx-3 rounded-2xl shadow-sm border border-blue-200/40 dark:border-gray-700/40 ${isDarkMode
-              ? 'bg-gradient-to-r from-gray-900/80 via-gray-800/70 to-gray-900/60 text-white'
-              : 'bg-gradient-to-r from-blue-50/80 via-white/80 to-blue-100/70 text-gray-900'
-              }`}
-          >
-            <p className="text-xs italic flex items-center gap-1.5">
-              <AlertCircle size={15} className="text-blue-400" />
+          <div className="p-4 border-b border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)]">
+            <p className="text-xs italic flex items-start gap-2 text-[var(--text-secondary)]">
+              <AlertCircle size={14} className="text-[var(--accent-gold)] mt-0.5 flex-shrink-0" />
               <span>
-                <span className="font-bold text-blue-600">38 Lá Thư</span>: "Điều hướng thông minh, lập kế hoạch tài chính hiệu quả."
+                <span className="font-bold font-display text-[var(--accent-gold)]">38 LÁ THƯ:</span> "Kỷ luật là nền tảng của mọi vinh quang tài chính."
               </span>
             </p>
           </div>
         )}
+
         {/* Menu */}
-        <ul className="flex-1 flex flex-col gap-1 px-2 py-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-200/40 dark:scrollbar-thumb-gray-700/40 scrollbar-track-transparent">
+        <ul className="flex-1 flex flex-col gap-1 py-4 overflow-y-auto">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -283,25 +231,19 @@ const Sidebar = memo(() => {
                     ${navItemBase}
                     ${isActive ? navItemActive : navItemInactive}
                     ${isCollapsed && !isMobile ? 'justify-center px-2 py-3' : ''}
-                    focus:outline-none focus:ring-2 focus:ring-blue-400/60
+                    focus:outline-none focus:ring-1 focus:ring-[var(--accent-gold)]
                   `}
                   title={item.label}
                   onClick={handleMenuItemClick}
-                  tabIndex={
-                    isMobile
-                      ? isMobileMenuOpen
-                        ? 0
-                        : -1
-                      : 0
-                  }
+                  tabIndex={isMobile ? (isMobileMenuOpen ? 0 : -1) : 0}
                   style={{
                     transition: 'all 0.18s cubic-bezier(.77,0,.18,1)',
                     minHeight: 48,
                   }}
                 >
-                  <item.icon size={22} className="transition-transform duration-200 group-hover:scale-110" />
+                  <item.icon size={20} className="transition-transform duration-200 group-hover:scale-105" />
                   {(!isCollapsed || isMobile) && (
-                    <span className="transition-all duration-200 group-hover:translate-x-1">
+                    <span className="font-display text-sm tracking-wider uppercase">
                       {item.label}
                     </span>
                   )}
@@ -310,8 +252,9 @@ const Sidebar = memo(() => {
             );
           })}
         </ul>
+
         {/* Bottom actions */}
-        <div className="w-full px-3 pb-5 mt-auto flex flex-col gap-2">
+        <div className="w-full p-4 border-t border-[var(--border-color)] mt-auto flex flex-col gap-2">
           <button
             onClick={() => {
               handleLogout();
@@ -322,15 +265,15 @@ const Sidebar = memo(() => {
             aria-label="Đăng xuất"
             tabIndex={0}
           >
-            <LogOut size={20} />
-            {(!isCollapsed || isMobile) && <span>Đăng xuất</span>}
+            <LogOut size={18} />
+            {(!isCollapsed || isMobile) && <span className="font-display text-xs tracking-wider uppercase">Đăng xuất</span>}
           </button>
         </div>
       </nav>
       {/* Overlay for mobile */}
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40 md:hidden transition-all duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 md:hidden transition-all duration-300"
           onClick={toggleMobileMenu}
           aria-label="Đóng menu"
         ></div>

@@ -5,7 +5,6 @@ import AccountActions from '../components/Settings/AccountActions';
 import ConfirmModal from '../components/Settings/ConfirmModal';
 import { FinanceContext } from '../contexts/FinanceContext';
 
-// Utility for haptic feedback (mobile UX)
 const haptic = () => {
   if (window.navigator.vibrate) window.navigator.vibrate(30);
 };
@@ -18,21 +17,17 @@ function Settings() {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  // Modern theme toggle with system preference
-  // Modern theme toggle with system preference
   const handleToggleTheme = () => {
     toggleDarkMode();
     haptic();
   };
 
-  // Confirm dialog logic
   const openConfirm = (type) => {
     setShowConfirm({ type, open: true });
     haptic();
   };
   const closeConfirm = () => setShowConfirm({ type: null, open: false });
 
-  // Modern async handler with animation
   const handleAction = async (type) => {
     setIsSubmitting(true);
     setError('');
@@ -58,46 +53,31 @@ function Settings() {
   };
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-500 ${isDarkMode
-        ? 'bg-slate-950 text-white'
-        : 'bg-gradient-to-br from-blue-50 via-white to-green-50 text-gray-900'
-        }`}
-      style={{
-        fontFamily: "'Inter', 'Roboto', 'San Francisco', 'Segoe UI', Arial, sans-serif",
-        backgroundAttachment: 'fixed',
-      }}
-    >
-      <main className="flex flex-col items-center justify-center px-2 py-8 min-h-screen">
-        <section
-          className="w-full max-w-7xl glass-card-modern rounded-3xl shadow-2xl p-6 sm:p-10 animate-fade-in"
-          style={{
-            ...(typeof window !== 'undefined' && window.innerWidth > 640
-              ? { backdropFilter: 'blur(24px) saturate(180%)' }
-              : {}),
-            background: isDarkMode ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255,255,255,0.85)',
-            boxShadow: isDarkMode ? '0 8px 32px 0 rgba(0, 0, 0, 0.4)' : '0 8px 32px 0 rgba(31, 38, 135, 0.18), 0 1.5px 6px 0 rgba(0,0,0,0.04)',
-            border: isDarkMode ? '1.5px solid rgba(255,255,255,0.05)' : '1.5px solid rgba(0,0,0,0.06)',
-          }}
-        >
-          <header className="flex items-center justify-between mb-6">
-            <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
-              <span className="inline-block animate-gradient-x bg-gradient-to-r from-blue-500 via-green-400 to-purple-500 bg-clip-text text-transparent">
-                Cài đặt
-              </span>
-              <span className="ml-1 text-lg">⚙️</span>
-            </h2>
-            <button
-              onClick={handleToggleTheme}
-              className={`group relative flex items-center gap-2 px-4 py-2 rounded-xl font-semibold shadow-lg transition-all duration-300 ${isDarkMode ? 'bg-gray-800 text-blue-200' : 'bg-gradient-to-r from-blue-400 to-green-400 text-white'
-                }`}
-            >
-              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
-          </header>
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
+      {/* Topbar */}
+      <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
+        <div className="flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+          <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
+            <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
+              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+            </div>
+            THIẾT LẬP HỆ THỐNG
+          </h1>
+          <button
+            onClick={handleToggleTheme}
+            className="btn-gold-outline px-4 py-2 text-xs font-display font-bold uppercase tracking-widest"
+          >
+            {isDarkMode ? 'Giao diện sáng' : 'Giao diện tối'}
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <section className="p-6 sm:p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative">
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-gold)]" />
 
           {error && (
-            <div className="mb-4 animate-shake bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-4 py-2 rounded-lg">
+            <div className="mb-6 border border-red-500/30 bg-red-500/5 text-red-500 px-4 py-3 text-xs font-display uppercase tracking-wider">
               {error}
             </div>
           )}
@@ -118,18 +98,6 @@ function Settings() {
         closeConfirm={closeConfirm}
         handleAction={handleAction}
       />
-
-      <style>{`
-        .glass-card-modern { border-radius: 2rem; }
-        .animate-fade-in { animation: fadeIn 0.7s cubic-bezier(.4,0,.2,1); }
-        .animate-pop-in { animation: popIn 0.35s cubic-bezier(.4,0,.2,1); }
-        .animate-shake { animation: shake 0.4s both; }
-        .animate-gradient-x { background-size: 200% 200%; animation: gradientX 2.5s linear infinite; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-        @keyframes popIn { 0% { opacity: 0; transform: scale(0.85); } 100% { opacity: 1; transform: scale(1); } }
-        @keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
-        @keyframes gradientX { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-      `}</style>
     </div>
   );
 }
