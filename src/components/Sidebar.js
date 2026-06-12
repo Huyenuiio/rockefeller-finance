@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle, List } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../config';
 
 // Responsive, modern Sidebar with Rockefeller aesthetic (rigid, standard gold & obsidian)
 const Sidebar = memo(() => {
@@ -52,7 +53,7 @@ const Sidebar = memo(() => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/logout`, {
+        await fetch(`${API_URL}/api/logout`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         });

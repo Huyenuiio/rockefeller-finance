@@ -11,6 +11,7 @@ import DepositModal from '../components/Expenses/DepositModal';
 import { FinanceContext } from '../contexts/FinanceContext';
 import { categories } from '../constants/categories';
 import { numberToWords } from '../constants/investments';
+import { API_URL } from '../config';
 
 const initialVisibilityState = categories.reduce((acc, category) => {
   acc[category.value] = false;
@@ -75,13 +76,13 @@ function Expenses() {
     const fetchData = async () => {
       try {
         const [budgetRes, expensesRes, allocationsRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
+          axios.get(`${API_URL}/api/initial-budget`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`, {
+          axios.get(`${API_URL}/api/expenses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
+          axios.get(`${API_URL}/api/allocations`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -110,7 +111,7 @@ function Expenses() {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`,
+        `${API_URL}/api/initial-budget`,
         { initialBudget: parsedBudget },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -138,7 +139,7 @@ function Expenses() {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`,
+        `${API_URL}/api/expenses`,
         {
           amount: parsedAmount,
           category,
@@ -150,10 +151,10 @@ function Expenses() {
       );
       setExpenses(response.data);
       const [budgetRes, allocRes] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
+        axios.get(`${API_URL}/api/initial-budget`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
+        axios.get(`${API_URL}/api/allocations`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -174,15 +175,15 @@ function Expenses() {
   const handleDeleteExpense = async (index) => {
     try {
       const response = await axios.delete(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses/${index}`,
+        `${API_URL}/api/expenses/${index}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExpenses(response.data);
       const [budgetRes, allocRes] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
+        axios.get(`${API_URL}/api/initial-budget`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
+        axios.get(`${API_URL}/api/allocations`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { categories } from '../constants/categories';
 import { formatVND } from '../constants/investments';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { API_URL } from '../config';
 
 const Transactions = () => {
     const [transactions, setTransactions] = useState([]);
@@ -17,7 +18,7 @@ const Transactions = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`,
+                `${API_URL}/api/expenses`,
                 {
                     params: { page, limit: 15, search, category },
                     headers: { Authorization: `Bearer ${token}` }

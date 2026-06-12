@@ -9,6 +9,7 @@ import TransactionHistoryList from '../components/Home/TransactionHistoryList';
 import { categories } from '../constants/categories';
 import { FinanceContext } from '../contexts/FinanceContext';
 import numberToWords from '../utils/numberToWords';
+import { API_URL } from '../config';
 import '../styles/pages/Home.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -95,10 +96,10 @@ function Home() {
       setIsLoading(true);
       try {
         const [allocRes, expenseRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`, {
+          axios.get(`${API_URL}/api/allocations`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/expenses`, {
+          axios.get(`${API_URL}/api/expenses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);

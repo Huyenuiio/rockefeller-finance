@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import axios from 'axios';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FinanceProvider } from './contexts/FinanceContext';
+import { API_URL } from './config';
 // import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
@@ -25,7 +26,7 @@ const ProtectedRoute = ({ children }) => {
     const checkBudget = async () => {
       if (token) {
         try {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/initial-budget`, {
+          const response = await axios.get(`${API_URL}/api/initial-budget`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (response.data.initialBudget === 0) {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AccountActions from '../components/Settings/AccountActions';
 import ConfirmModal from '../components/Settings/ConfirmModal';
 import { FinanceContext } from '../contexts/FinanceContext';
+import { API_URL } from '../config';
 
 const haptic = () => {
   if (window.navigator.vibrate) window.navigator.vibrate(30);
@@ -33,13 +34,13 @@ function Settings() {
     setError('');
     try {
       if (type === 'deleteAccount') {
-        await axios.delete(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/account`, {
+        await axios.delete(`${API_URL}/api/account`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         localStorage.removeItem('token');
         navigate('/login');
       } else if (type === 'resetBudget') {
-        await axios.delete(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/budget`, {
+        await axios.delete(`${API_URL}/api/budget`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         navigate('/expenses');

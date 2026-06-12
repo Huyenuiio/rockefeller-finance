@@ -5,6 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Eye, EyeOff, KeyRound, User, Moon, Sun } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { FinanceContext } from '../contexts/FinanceContext';
+import { API_URL } from '../config';
 
 function Login() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -47,8 +48,8 @@ function Login() {
     setIsSubmitting(true);
     try {
       const endpoint = isLoginMode
-        ? `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/login`
-        : `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/register`;
+        ? `${API_URL}/api/login`
+        : `${API_URL}/api/register`;
       const response = await axios.post(endpoint, { username, password });
       if (isLoginMode) {
         localStorage.setItem('token', response.data.token);
@@ -62,7 +63,7 @@ function Login() {
         setTimeout(async () => {
           try {
             const loginResponse = await axios.post(
-              `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/login`,
+              `${API_URL}/api/login`,
               { username, password }
             );
             localStorage.setItem('token', loginResponse.data.token);
@@ -90,7 +91,7 @@ function Login() {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/google-login`,
+        `${API_URL}/api/google-login`,
         { credential: credentialResponse.credential }
       );
       localStorage.setItem('token', response.data.token);

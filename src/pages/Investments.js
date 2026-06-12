@@ -4,6 +4,7 @@ import {
   investmentTypes, goldTypes, goldBrands, bitcoinExchanges,
   formatVND, numberToWords
 } from "../constants/investments";
+import { API_URL } from "../config";
 import InvestmentAllocations from "../components/Investments/InvestmentAllocations";
 import InvestmentForm from "../components/Investments/InvestmentForm";
 
@@ -52,7 +53,7 @@ const Investments = () => {
       setError("");
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`,
+          `${API_URL}/api/allocations`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -162,7 +163,7 @@ const Investments = () => {
       };
 
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/investments`,
+        `${API_URL}/api/investments`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -178,7 +179,7 @@ const Investments = () => {
       }
       // Cập nhật lại allocations
       await axios.put(
-        `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/allocations`,
+        `${API_URL}/api/allocations`,
         {
           selfInvestment: newSelf,
           emergency: newEmergency,
