@@ -44,6 +44,7 @@ function Expenses() {
   const token = localStorage.getItem('token');
   const snackbarTimeout = useRef(null);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleDepositClick = () => {
     setNewBudget('');
@@ -76,6 +77,7 @@ function Expenses() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const [budgetRes, expensesRes, allocationsRes] = await Promise.all([
           axios.get(`${API_URL}/api/initial-budget`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -92,9 +94,12 @@ function Expenses() {
         setAllocations(allocationsRes.data);
       } catch (err) {
         showNotification(err.response?.data?.error || 'Lỗi lấy dữ liệu');
+      } finally {
+        setIsLoading(false);
       }
     };
     if (token) fetchData();
+    else setIsLoading(false);
   }, [token]);
 
   const formatVND = (value) => {
@@ -224,7 +229,14 @@ function Expenses() {
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {initialBudget === null || initialBudget === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <svg className="animate-spin h-10 w-10 text-[var(--accent-gold)]" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          </div>
+        ) : initialBudget === null || initialBudget === 0 ? (
           <section className="max-w-md mx-auto">
             <div className="p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl relative">
               <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--accent-gold)]" />
