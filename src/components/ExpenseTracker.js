@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { FinanceContext } from '../contexts/FinanceContext';
+import { parseVietnameseMonthYear } from '../utils/dateHelpers';
 
 function ExpenseTracker() {
   const [amount, setAmount] = useState('');
@@ -151,8 +152,8 @@ function ExpenseTracker() {
       <h3 className="text-lg font-semibold mb-4">Lịch sử chi tiêu</h3>
       {Object.keys(groupedTransactions).length > 0 ? (
         Object.keys(groupedTransactions).sort((a, b) => {
-          const dateA = new Date(a.split(' ')[1], new Date().toLocaleString('vi-VN', { month: 'long' }).indexOf(a.split(' ')[0]));
-          const dateB = new Date(b.split(' ')[1], new Date().toLocaleString('vi-VN', { month: 'long' }).indexOf(b.split(' ')[0]));
+          const dateA = parseVietnameseMonthYear(a);
+          const dateB = parseVietnameseMonthYear(b);
           return dateB - dateA;
         }).map((monthYear) => (
           <div key={monthYear} className="mb-4">

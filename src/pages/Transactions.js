@@ -3,6 +3,7 @@ import axios from 'axios';
 import { categories } from '../constants/categories';
 import { formatVND } from '../constants/investments';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { parseTransactionDate } from '../utils/dateHelpers';
 import { API_URL } from '../config';
 
 const Transactions = () => {
@@ -111,8 +112,15 @@ const Transactions = () => {
                             </thead>
                             <tbody>
                                 {(transactions || []).map((tx, idx) => {
-                                    const categoryObj = categories.find(c => c.value === tx.category);
-                                    const txDate = new Date(tx.date);
+                                    const normalizedCategory = {
+                                        'Tiêu dùng thiết yếu': 'essentials',
+                                        'Tiết kiệm bắt buộc': 'savings',
+                                        'Đầu tư bản thân': 'selfInvestment',
+                                        'Từ thiện': 'charity',
+                                        'Dự phòng linh hoạt': 'emergency',
+                                    }[tx.category] || tx.category;
+                                    const categoryObj = categories.find(c => c.value === normalizedCategory);
+                                    const txDate = parseTransactionDate(tx.date);
                                     const formattedDate = txDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
                                     const formattedTime = txDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 

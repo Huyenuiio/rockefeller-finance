@@ -9,6 +9,7 @@ import TransactionHistoryList from '../components/Home/TransactionHistoryList';
 import { categories } from '../constants/categories';
 import { FinanceContext } from '../contexts/FinanceContext';
 import numberToWords from '../utils/numberToWords';
+import { parseTransactionDate, parseVietnameseMonthYear } from '../utils/dateHelpers';
 import { API_URL } from '../config';
 import '../styles/pages/Home.css';
 
@@ -113,7 +114,7 @@ function Home() {
               'Đầu tư bản thân': 'selfInvestment',
               'Từ thiện': 'charity',
               'Dự phòng linh hoạt': 'emergency',
-            }[tx.category],
+            }[tx.category] || tx.category,
             details: tx.purpose,
             timestamp: tx.date,
           }))
@@ -198,16 +199,12 @@ function Home() {
     const months = new Set();
     transactionHistory.forEach((transaction) => {
       if (!transaction?.timestamp) return;
-      const date = new Date(transaction.timestamp.split('/').reverse().join('-'));
+      const date = parseTransactionDate(transaction.timestamp);
       const monthYear = date.toLocaleString('vi-VN', { month: 'long', year: 'numeric' });
       months.add(monthYear);
     });
     return [...months].sort((a, b) => {
-      const [monthA, yearA] = a.split(' ');
-      const [monthB, yearB] = b.split(' ');
-      const dateA = new Date(yearA, new Date(Date.parse(monthA + " 1, 2000")).getMonth());
-      const dateB = new Date(yearB, new Date(Date.parse(monthB + " 1, 2000")).getMonth());
-      return dateB - dateA;
+      return parseVietnameseMonthYear(b) - parseVietnameseMonthYear(a);
     });
   }, [transactionHistory]);
 
@@ -222,7 +219,7 @@ function Home() {
       const locationMatch = searchLocation ? (tx.location || '').toLowerCase().includes(searchLocation.toLowerCase()) : true;
       const categoryMatch = selectedCategory ? tx.category === selectedCategory : true;
       const monthMatch = selectedMonthYear
-        ? new Date(tx.timestamp.split('/').reverse().join('-')).toLocaleString('vi-VN', { month: 'long', year: 'numeric' }) === selectedMonthYear
+        ? parseTransactionDate(tx.timestamp).toLocaleString('vi-VN', { month: 'long', year: 'numeric' }) === selectedMonthYear
         : true;
       return amountMatch && detailsMatch && locationMatch && categoryMatch && monthMatch;
     });
@@ -239,7 +236,7 @@ function Home() {
     const grouped = {};
     paginatedTransactions.forEach((transaction) => {
       if (!transaction?.timestamp) return;
-      const date = new Date(transaction.timestamp.split('/').reverse().join('-'));
+      const date = parseTransactionDate(transaction.timestamp);
       const monthYear = date.toLocaleString('vi-VN', { month: 'long', year: 'numeric' });
       if (!grouped[monthYear]) {
         grouped[monthYear] = [];
@@ -281,11 +278,7 @@ function Home() {
   const sortTransactionsByDateDesc = (transactions) => {
     return [...transactions].sort((a, b) => {
       if (!a?.timestamp || !b?.timestamp) return 0;
-      const [da, ma, ya] = a.timestamp.split('/').map(Number);
-      const [db, mb, yb] = b.timestamp.split('/').map(Number);
-      const dateA = new Date(ya, ma - 1, da);
-      const dateB = new Date(yb, mb - 1, db);
-      return dateB - dateA;
+      return parseTransactionDate(b.timestamp) - parseTransactionDate(a.timestamp);
     });
   };
 

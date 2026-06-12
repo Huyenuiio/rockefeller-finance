@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown, ChevronUp, History } from 'lucide-react';
+import { parseVietnameseMonthYear } from '../../utils/dateHelpers';
 
 const TransactionHistoryList = ({
     paginatedGrouped,
@@ -22,11 +23,7 @@ const TransactionHistoryList = ({
             {Object.keys(paginatedGrouped).length > 0 ? (
                 <>
                     {Object.keys(paginatedGrouped).sort((a, b) => {
-                        const [monthA, yearA] = a.split(' ');
-                        const [monthB, yearB] = b.split(' ');
-                        const dateA = new Date(yearA, new Date(Date.parse(monthA + " 1, 2000")).getMonth());
-                        const dateB = new Date(yearB, new Date(Date.parse(monthB + " 1, 2000")).getMonth());
-                        return dateB - dateA;
+                        return parseVietnameseMonthYear(b) - parseVietnameseMonthYear(a);
                     }).map((monthYear) => (
                         <div key={monthYear} className="mb-4">
                             <button
