@@ -49,14 +49,17 @@ const BudgetBalance = ({
                                 <div className="relative flex-1">
                                     <input
                                         id="initialBudget"
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         value={newBudget}
-                                        onChange={(e) => setNewBudget(e.target.value)}
+                                        onChange={(e) => {
+                                            const cleanVal = e.target.value.replace(/\D/g, '');
+                                            setNewBudget(cleanVal);
+                                        }}
                                         className="rockefeller-input pl-10 text-xs font-mono"
                                         placeholder="Nhập số tiền..."
                                         required
-                                        min="1"
-                                        inputMode="numeric"
                                     />
                                     <PlusCircle size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--accent-gold)]" />
                                 </div>

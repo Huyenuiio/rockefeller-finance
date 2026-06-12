@@ -46,6 +46,7 @@ function Expenses() {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
 
   const handleDepositClick = () => {
+    setNewBudget('');
     setIsDepositModalOpen(true);
   };
 
@@ -118,6 +119,8 @@ function Expenses() {
       setInitialBudget(response.data.initialBudget);
       setAllocations(response.data.allocations);
       showNotification('Ngân sách đã được cập nhật!');
+      setIsDepositModalOpen(false);
+      setNewBudget('');
     } catch (err) {
       showNotification(err.response?.data?.error || 'Lỗi lưu ngân sách');
     } finally {
@@ -229,7 +232,20 @@ function Expenses() {
               <form onSubmit={handleBudgetSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-display font-bold tracking-wider uppercase text-[var(--text-secondary)] mb-2" htmlFor="initialBudget">Ngân sách khởi tạo (VND)</label>
-                  <input id="initialBudget" type="number" value={newBudget} onChange={(e) => setNewBudget(e.target.value)} className="rockefeller-input font-mono" placeholder="Ví dụ: 10,000,000" required min="1" inputMode="numeric" />
+                  <input
+                    id="initialBudget"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={newBudget}
+                    onChange={(e) => {
+                      const cleanVal = e.target.value.replace(/\D/g, '');
+                      setNewBudget(cleanVal);
+                    }}
+                    className="rockefeller-input font-mono"
+                    placeholder="Ví dụ: 10,000,000"
+                    required
+                  />
                 </div>
                 <button type="submit" disabled={isSubmitting} className="w-full btn-gold-primary py-3 text-xs uppercase tracking-widest font-bold">
                   {isSubmitting ? "Đang xử lý..." : "Khởi tạo tài khoản"}

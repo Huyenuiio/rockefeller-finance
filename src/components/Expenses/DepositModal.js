@@ -64,7 +64,6 @@ const DepositModal = ({
 
                     <form onSubmit={(e) => {
                         handleBudgetSubmit(e);
-                        onClose();
                     }} className="space-y-5">
                         <div className="space-y-2">
                             <label className="text-[10px] font-sans font-bold uppercase tracking-widest text-[var(--text-muted)] block">
@@ -73,14 +72,17 @@ const DepositModal = ({
                             <div className="relative">
                                 <input
                                     ref={inputRef}
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     value={newBudget}
-                                    onChange={(e) => setNewBudget(e.target.value)}
+                                    onChange={(e) => {
+                                        const cleanVal = e.target.value.replace(/\D/g, '');
+                                        setNewBudget(cleanVal);
+                                    }}
                                     className="rockefeller-input pl-10 text-2xl font-mono font-bold py-3"
                                     placeholder="0"
                                     required
-                                    min="1"
-                                    inputMode="numeric"
                                 />
                                 <PlusCircle size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--accent-gold)]" />
                             </div>

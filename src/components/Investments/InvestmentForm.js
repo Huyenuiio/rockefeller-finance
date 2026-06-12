@@ -25,13 +25,16 @@ const InvestmentForm = ({
                             SỐ TIỀN ỦY THÁC (VND)
                         </label>
                         <input
-                            type="number"
-                            min={0}
-                            step={1000}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             className="rockefeller-input font-mono text-sm py-2.5"
                             placeholder="Nhập số tiền (VND)"
                             value={inputAmount}
-                            onChange={(e) => setInputAmount(e.target.value)}
+                            onChange={(e) => {
+                                const cleanVal = e.target.value.replace(/\D/g, '');
+                                setInputAmount(cleanVal);
+                            }}
                             disabled={creating}
                             required
                         />

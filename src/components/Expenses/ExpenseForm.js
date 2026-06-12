@@ -33,14 +33,17 @@ const ExpenseForm = ({
                         </label>
                         <input
                             id="amount"
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            onChange={(e) => {
+                                const cleanVal = e.target.value.replace(/\D/g, '');
+                                setAmount(cleanVal);
+                            }}
                             className="rockefeller-input font-mono text-xl font-bold py-3"
                             placeholder="0"
                             required
-                            min="1"
-                            inputMode="numeric"
                         />
 
                         {/* Verifying Helper Area */}
