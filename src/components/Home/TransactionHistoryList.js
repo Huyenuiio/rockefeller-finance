@@ -12,14 +12,35 @@ const TransactionHistoryList = ({
     currentPage,
     setCurrentPage,
     totalPages,
-    isDarkMode
+    isDarkMode,
+    onExportCSV,
+    onImportCSV
 }) => {
     return (
         <section className="mb-8">
-            <h3 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-3 flex items-center gap-2 uppercase">
-                <History size={16} />
-                LỊCH SỬ GIAO DỊCH
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                <h3 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] flex items-center gap-2 uppercase">
+                    <History size={16} />
+                    LỊCH SỬ GIAO DỊCH
+                </h3>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onExportCSV}
+                        className="btn-gold-outline px-3 py-1.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5"
+                    >
+                        Xuất CSV
+                    </button>
+                    <label className="btn-gold-outline px-3 py-1.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5 cursor-pointer">
+                        Nhập CSV
+                        <input
+                            type="file"
+                            accept=".csv"
+                            onChange={onImportCSV}
+                            className="hidden"
+                        />
+                    </label>
+                </div>
+            </div>
             {Object.keys(paginatedGrouped).length > 0 ? (
                 <>
                     {Object.keys(paginatedGrouped).sort((a, b) => {

@@ -4,6 +4,7 @@ import { categories } from '../constants/categories';
 import { formatVND } from '../constants/investments';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { parseTransactionDate } from '../utils/dateHelpers';
+import { exportToCSV, parseCSV } from '../utils/csvHelpers';
 import { API_URL } from '../config';
 
 const Transactions = () => {
@@ -48,6 +49,68 @@ const Transactions = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
+    const handleExportCSV = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get(
+                `${API_URL}/api/expenses`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const csvContent = exportToCSV(response.data, categories);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `rockefeller_so_cai_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error('Lỗi xuất CSV:', err);
+            alert('Không thể xuất file CSV');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleImportCSV = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const csvText = event.target?.result;
+            if (!csvText) return;
+            
+            const parsedExpenses = parseCSV(csvText, categories);
+            if (parsedExpenses.length === 0) {
+                alert('Không tìm thấy dữ liệu hợp lệ trong file CSV.');
+                return;
+            }
+            
+            const confirmImport = window.confirm(`Bạn có chắc chắn muốn nhập ${parsedExpenses.length} giao dịch từ file CSV?`);
+            if (!confirmImport) return;
+            
+            try {
+                setLoading(true);
+                await axios.post(
+                    `${API_URL}/api/expenses/bulk`,
+                    { expenses: parsedExpenses },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                alert(`Nhập thành công ${parsedExpenses.length} giao dịch!`);
+                fetchTransactions();
+            } catch (err) {
+                console.error('Lỗi nhập dữ liệu chi tiêu hàng loạt:', err);
+                alert(err.response?.data?.error || 'Đã xảy ra lỗi khi nhập dữ liệu');
+            } finally {
+                setLoading(false);
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    };
+
     return (
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
             {/* Topbar */}
@@ -75,16 +138,33 @@ const Transactions = () => {
                         />
                         <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                     </div>
-                    <select
-                        className="rockefeller-input text-xs py-2.5 bg-[var(--bg-secondary)] min-w-[200px]"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                    >
-                        <option value="">Tất cả danh mục</option>
-                        {categories.map(cat => (
-                            <option key={cat.value} value={cat.value}>{cat.label.split('(')[0]}</option>
-                        ))}
-                    </select>
+                    <div className="flex flex-wrap md:flex-nowrap gap-3 items-center">
+                        <select
+                            className="rockefeller-input text-xs py-2.5 bg-[var(--bg-secondary)] min-w-[200px]"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                        >
+                            <option value="">Tất cả danh mục</option>
+                            {categories.map(cat => (
+                                <option key={cat.value} value={cat.value}>{cat.label.split('(')[0]}</option>
+                            ))}
+                        </select>
+                        <button
+                            onClick={handleExportCSV}
+                            className="btn-gold-outline px-4 py-2.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5 whitespace-nowrap"
+                        >
+                            Xuất CSV
+                        </button>
+                        <label className="btn-gold-outline px-4 py-2.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+                            Nhập CSV
+                            <input
+                                type="file"
+                                accept=".csv"
+                                onChange={handleImportCSV}
+                                className="hidden"
+                            />
+                        </label>
+                    </div>
                 </div>
 
                 {/* Ledger Table */}

@@ -10,6 +10,7 @@ import { categories } from '../constants/categories';
 import { FinanceContext } from '../contexts/FinanceContext';
 import numberToWords from '../utils/numberToWords';
 import { parseTransactionDate, parseVietnameseMonthYear } from '../utils/dateHelpers';
+import { exportToCSV, parseCSV } from '../utils/csvHelpers';
 import { API_URL } from '../config';
 import '../styles/pages/Home.css';
 
@@ -282,6 +283,78 @@ function Home() {
     });
   };
 
+  const handleExportCSV = () => {
+    try {
+      const csvContent = exportToCSV(transactionHistory, categories);
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `rockefeller_giao_dich_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Lỗi xuất CSV:', err);
+      alert('Không thể xuất file CSV');
+    }
+  };
+
+  const handleImportCSV = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const csvText = event.target?.result;
+      if (!csvText) return;
+      
+      const parsedExpenses = parseCSV(csvText, categories);
+      if (parsedExpenses.length === 0) {
+        alert('Không tìm thấy dữ liệu hợp lệ trong file CSV.');
+        return;
+      }
+      
+      const confirmImport = window.confirm(`Bạn có chắc chắn muốn nhập ${parsedExpenses.length} giao dịch từ file CSV?`);
+      if (!confirmImport) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await axios.post(
+          `${API_URL}/api/expenses/bulk`,
+          { expenses: parsedExpenses },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setTransactionHistory(
+          response.data.map((tx) => ({
+            ...tx,
+            category: {
+              'Tiêu dùng thiết yếu': 'essentials',
+              'Tiết kiệm bắt buộc': 'savings',
+              'Đầu tư bản thân': 'selfInvestment',
+              'Từ thiện': 'charity',
+              'Dự phòng linh hoạt': 'emergency',
+            }[tx.category] || tx.category,
+            details: tx.purpose,
+            timestamp: tx.date,
+          }))
+        );
+        alert(`Nhập thành công ${parsedExpenses.length} giao dịch!`);
+        const allocRes = await axios.get(`${API_URL}/api/allocations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAllocations(allocRes.data);
+      } catch (err) {
+        console.error('Lỗi nhập dữ liệu chi tiêu hàng loạt:', err);
+        alert(err.response?.data?.error || 'Đã xảy ra lỗi khi nhập dữ liệu');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <div
       className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]"
@@ -366,6 +439,8 @@ function Home() {
               setCurrentPage={setCurrentPage}
               totalPages={totalPages}
               isDarkMode={isDarkMode}
+              onExportCSV={handleExportCSV}
+              onImportCSV={handleImportCSV}
             />
           </>
         )}
