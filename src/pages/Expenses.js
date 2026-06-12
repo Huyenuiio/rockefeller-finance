@@ -246,6 +246,17 @@ function Expenses() {
                     placeholder="Ví dụ: 10,000,000"
                     required
                   />
+                  {newBudget && (
+                    <div className="mt-2.5 p-3.5 border border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)] transition-all">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)]">Số tiền xác nhận</span>
+                        <span className="text-sm font-mono font-bold text-[var(--accent-gold)]">{formatVND(newBudget)}</span>
+                      </div>
+                      <p className="text-[10px] font-display uppercase tracking-wider text-[var(--text-muted)] mt-1.5 leading-relaxed font-medium">
+                        {numberToWords(newBudget)}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <button type="submit" disabled={isSubmitting} className="w-full btn-gold-primary py-3 text-xs uppercase tracking-widest font-bold">
                   {isSubmitting ? "Đang xử lý..." : "Khởi tạo tài khoản"}
