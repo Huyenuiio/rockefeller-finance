@@ -2,8 +2,6 @@ import React, { useState, useEffect, memo, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle, List } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useContext } from 'react';
-import { FinanceContext } from '../contexts/FinanceContext';
 
 // Responsive, modern Sidebar with Rockefeller aesthetic (rigid, standard gold & obsidian)
 const Sidebar = memo(() => {
@@ -11,7 +9,6 @@ const Sidebar = memo(() => {
     if (window.innerWidth < 768) return false;
     return localStorage.getItem('sidebarCollapsed') === 'true';
   });
-  const { isDarkMode } = useContext(FinanceContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
@@ -80,7 +77,7 @@ const Sidebar = memo(() => {
 
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) setIsMobileMenuOpen(false);
-  }, [location.pathname, isMobile]);
+  }, [location.pathname, isMobile, isMobileMenuOpen]);
 
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) {

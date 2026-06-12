@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {
   investmentTypes, goldTypes, goldBrands, bitcoinExchanges,
@@ -6,16 +6,13 @@ import {
 } from "../constants/investments";
 import InvestmentAllocations from "../components/Investments/InvestmentAllocations";
 import InvestmentForm from "../components/Investments/InvestmentForm";
-import { FinanceContext } from "../contexts/FinanceContext";
 
 const Investments = () => {
   const [allocations, setAllocations] = useState({
     selfInvestment: 0,
     emergency: 0,
   });
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { isDarkMode } = useContext(FinanceContext);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState("");
   const snackbarTimeout = useRef(null);
@@ -52,7 +49,6 @@ const Investments = () => {
 
   useEffect(() => {
     const fetchAllocations = async () => {
-      setLoading(true);
       setError("");
       try {
         const res = await axios.get(
@@ -73,8 +69,6 @@ const Investments = () => {
           err.response?.data?.error || "Lỗi khi lấy dữ liệu phân bổ ngân sách"
         );
         setShowSnackbar(true);
-      } finally {
-        setLoading(false);
       }
     };
     fetchAllocations();
@@ -129,19 +123,15 @@ const Investments = () => {
 
     // Chuẩn bị dữ liệu giao dịch
     let description = "";
-    let category = "";
     let detail = {};
 
     if (selectedType === "gold") {
-      category = "Vàng";
       description = `Đầu tư vàng: ${goldDetail.goldType ? goldDetail.goldType + ", " : ""}${goldDetail.weight ? goldDetail.weight + " " + (goldDetail.weightUnit === "gram" ? "g" : "lượng") : ""}${goldDetail.brand ? ", " + goldDetail.brand : ""}${goldDetail.form ? ", " + goldDetail.form : ""}`;
       detail = { ...goldDetail };
     } else if (selectedType === "bitcoin") {
-      category = "Bitcoin";
       description = `Đầu tư Bitcoin: ${bitcoinDetail.exchange ? "Sàn " + bitcoinDetail.exchange : ""}${bitcoinDetail.wallet ? ", Ví: " + bitcoinDetail.wallet : ""}`;
       detail = { ...bitcoinDetail };
     } else if (selectedType === "selfInvestment") {
-      category = "Đầu tư bản thân";
       description = selfInvestDetail ? selfInvestDetail : "Đầu tư bản thân";
       detail = { content: selfInvestDetail };
     }

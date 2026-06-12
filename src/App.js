@@ -2,8 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { FinanceContext, FinanceProvider } from './contexts/FinanceContext';
-import { useContext } from 'react';
+import { FinanceProvider } from './contexts/FinanceContext';
 // import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
@@ -51,7 +50,6 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppLayout() {
-  const { isDarkMode } = useContext(FinanceContext);
   return (
     <div className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <Sidebar />

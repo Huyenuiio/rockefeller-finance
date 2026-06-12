@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { categories } from '../constants/categories';
 import { formatVND } from '../constants/investments';
-import { FinanceContext } from '../contexts/FinanceContext';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 const Transactions = () => {
@@ -12,8 +11,6 @@ const Transactions = () => {
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(false);
-    const { isDarkMode } = useContext(FinanceContext);
-
     const token = localStorage.getItem('token');
 
     const fetchTransactions = async () => {
@@ -37,6 +34,7 @@ const Transactions = () => {
 
     useEffect(() => {
         fetchTransactions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, category, token]);
 
     useEffect(() => {
@@ -45,6 +43,7 @@ const Transactions = () => {
             else setPage(1);
         }, 500);
         return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     return (

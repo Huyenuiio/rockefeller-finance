@@ -36,11 +36,9 @@ function Expenses() {
     emergency: 0,
   });
   const [expenses, setExpenses] = useState([]);
-  const [error, setError] = useState('');
   const { isDarkMode } = useContext(FinanceContext);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
-  const [showAllExpenses, setShowAllExpenses] = useState(false);
   const [visibility, setVisibility] = useState(initialVisibilityState);
   const token = localStorage.getItem('token');
   const snackbarTimeout = useRef(null);
@@ -54,16 +52,7 @@ function Expenses() {
     setVisibility(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const isAnyAmountVisible = Object.values(visibility).some(v => v === true);
 
-  const toggleAllVisibility = () => {
-    const shouldShowAll = !isAnyAmountVisible;
-    const newState = Object.keys(visibility).reduce((acc, key) => {
-      acc[key] = shouldShowAll;
-      return acc;
-    }, {});
-    setVisibility(newState);
-  };
 
   useEffect(() => {
     if (isDarkMode) {
@@ -100,7 +89,7 @@ function Expenses() {
         setExpenses(expensesRes.data);
         setAllocations(allocationsRes.data);
       } catch (err) {
-        setError(err.response?.data?.error || 'Lỗi lấy dữ liệu');
+        showNotification(err.response?.data?.error || 'Lỗi lấy dữ liệu');
       }
     };
     if (token) fetchData();
@@ -127,8 +116,6 @@ function Expenses() {
       );
       setInitialBudget(response.data.initialBudget);
       setAllocations(response.data.allocations);
-      setNewBudget('');
-      setError('');
       showNotification('Ngân sách đã được cập nhật!');
     } catch (err) {
       showNotification(err.response?.data?.error || 'Lỗi lưu ngân sách');
@@ -176,8 +163,6 @@ function Expenses() {
       setCategory('');
       setPurpose('');
       setLocation('');
-      setDate('');
-      setError('');
       showNotification('Chi tiêu đã được thêm!');
     } catch (err) {
       showNotification(err.response?.data?.error || 'Lỗi thêm chi tiêu');
@@ -217,9 +202,7 @@ function Expenses() {
     parseFloat(allocations.charity || 0) +
     parseFloat(allocations.emergency || 0);
 
-  const totalExpensesSpent = expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
   const sortedExpenses = [...expenses].reverse();
-  const COLLAPSED_COUNT = 5;
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]" style={{ minHeight: '100vh', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
@@ -255,7 +238,7 @@ function Expenses() {
           </section>
         ) : (
           <div className="flex flex-col gap-8">
-            <ExpenseDashboardHeader initialBudget={initialBudget} totalExpenses={totalExpensesSpent} visibility={visibility} toggleVisibility={toggleVisibility} formatVND={formatVND} isDarkMode={isDarkMode} onDeposit={handleDepositClick} />
+            <ExpenseDashboardHeader initialBudget={initialBudget} totalExpenses={expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0)} visibility={visibility} toggleVisibility={toggleVisibility} formatVND={formatVND} isDarkMode={isDarkMode} onDeposit={handleDepositClick} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-8">
                 <SpendingChart categories={categories} allocations={allocations} isDarkMode={isDarkMode} formatVND={formatVND} />
@@ -290,6 +273,17 @@ function Expenses() {
           </div>
         )}
       </main>
+      <DepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+        newBudget={newBudget}
+        setNewBudget={setNewBudget}
+        handleBudgetSubmit={handleBudgetSubmit}
+        isSubmitting={isSubmitting}
+        isDarkMode={isDarkMode}
+        formatVND={formatVND}
+        numberToWords={numberToWords}
+      />
     </div>
   );
 }

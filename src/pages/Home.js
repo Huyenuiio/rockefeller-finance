@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import AllocationHeader from '../components/Home/AllocationHeader';
 import AllocationChart from '../components/Home/AllocationChart';
@@ -41,7 +40,6 @@ function Home() {
   const [expandedMonths, setExpandedMonths] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // State mới để quản lý ẩn/hiện cho từng phần tử
@@ -317,9 +315,6 @@ function Home() {
         )}
         {error && (
           <div className="mb-4 p-4 border border-red-500/30 bg-red-500/5 text-red-500 font-sans text-sm">{error}</div>
-        )}
-        {successMessage && (
-          <div className="mb-4 p-4 border border-green-500/30 bg-green-500/5 text-green-500 font-sans text-sm">{successMessage}</div>
         )}
 
         {!isLoading && (
