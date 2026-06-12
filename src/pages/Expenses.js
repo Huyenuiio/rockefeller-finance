@@ -278,7 +278,7 @@ function Expenses() {
           </section>
         ) : (
           <div className="flex flex-col gap-8">
-            <ExpenseDashboardHeader initialBudget={initialBudget} totalExpenses={expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0)} visibility={visibility} toggleVisibility={toggleVisibility} formatVND={formatVND} isDarkMode={isDarkMode} onDeposit={handleDepositClick} />
+            <ExpenseDashboardHeader initialBudget={initialBudget} totalExpenses={expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0)} expenses={expenses} visibility={visibility} toggleVisibility={toggleVisibility} formatVND={formatVND} isDarkMode={isDarkMode} onDeposit={handleDepositClick} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 flex flex-col gap-8">
                 <SpendingChart categories={categories} allocations={allocations} isDarkMode={isDarkMode} formatVND={formatVND} />
