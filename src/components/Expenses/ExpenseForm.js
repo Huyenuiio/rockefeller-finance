@@ -136,7 +136,7 @@ const ExpenseForm = ({
                 >
                     {isSubmitting ? (
                         <div className="flex items-center justify-center gap-3">
-                            <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent" />
+                            <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />
                             ĐANG XỬ LÝ...
                         </div>
                     ) : (

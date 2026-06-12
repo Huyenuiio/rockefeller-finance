@@ -46,7 +46,7 @@ const ConfirmModal = ({ showConfirm, isDarkMode, isSubmitting, closeConfirm, han
                     >
                         {isSubmitting ? (
                             <span className="flex items-center justify-center gap-2">
-                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent" />
+                                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                                 XỬ LÝ...
                             </span>
                         ) : (

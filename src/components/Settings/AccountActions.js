@@ -18,7 +18,7 @@ const AccountActions = ({ handleAction, isSubmitting, showConfirm, openConfirm }
                     <Trash2 size={16} />
                     {isSubmitting && showConfirm.type === 'resetBudget' ? (
                         <span className="flex items-center gap-2">
-                            <div className="animate-spin h-4 w-4 border-2 border-amber-500 border-t-transparent" />
+                            <div className="animate-spin h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full" />
                             ĐANG XỬ LÝ...
                         </span>
                     ) : (
@@ -36,7 +36,7 @@ const AccountActions = ({ handleAction, isSubmitting, showConfirm, openConfirm }
                     <UserX size={16} />
                     {isSubmitting && showConfirm.type === 'deleteAccount' ? (
                         <span className="flex items-center gap-2">
-                            <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent" />
+                            <div className="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full" />
                             ĐANG XỬ LÝ...
                         </span>
                     ) : (

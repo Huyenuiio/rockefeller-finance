@@ -104,7 +104,7 @@ const InvestmentForm = ({
                         >
                             {creating ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent" />
+                                    <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />
                                     Đang xử lý...
                                 </span>
                             ) : "Xác nhận đầu tư"}
