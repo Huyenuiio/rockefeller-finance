@@ -15,7 +15,6 @@ const InvestmentForm = ({
     return (
         <section className="mb-8">
             <div className="p-6 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-gold)]" />
                 <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-4 uppercase">
                     ỦY THÁC ĐẦU TƯ MỚI
                 </h2>

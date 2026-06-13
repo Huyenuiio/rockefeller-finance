@@ -48,8 +48,6 @@ const SpendingChart = ({ categories, allocations, isDarkMode, formatVND }) => {
 
     return (
         <div className="p-6 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm relative">
-            {/* Accent Gold Line */}
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-gold)]" />
 
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] uppercase">

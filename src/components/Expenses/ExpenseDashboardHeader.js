@@ -83,8 +83,6 @@ const ExpenseDashboardHeader = ({
 
     return (
         <div className="relative overflow-hidden p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-lg group">
-            {/* Gold decorative top border */}
-            <div className="absolute top-0 left-0 w-full h-[4px] bg-[var(--accent-gold)]" />
 
             <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                 {/* Balance Info */}
@@ -92,7 +90,7 @@ const ExpenseDashboardHeader = ({
                     <div className="flex items-center gap-3 border border-[var(--border-color)] bg-black px-4 py-2 select-none">
                         <Wallet size={16} className="text-[var(--accent-gold)]" />
                         <span className="text-[10px] font-display font-bold uppercase tracking-widest text-[var(--accent-gold)]">
-                            NGÂN SÁCH TRỪ CHI TIÊU
+                            NGÂN SÁCH KHẢ DỤNG
                         </span>
                         <button
                             onClick={() => toggleVisibility('budgetBalance')}

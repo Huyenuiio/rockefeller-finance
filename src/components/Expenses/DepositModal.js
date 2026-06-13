@@ -37,8 +37,6 @@ const DepositModal = ({
                 className="relative w-full max-w-lg overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-2xl transition-all zoom-in-95 duration-200"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Gold top accent line */}
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-[var(--accent-gold)]" />
 
                 <button
                     onClick={onClose}

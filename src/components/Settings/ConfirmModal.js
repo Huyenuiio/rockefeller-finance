@@ -12,8 +12,6 @@ const ConfirmModal = ({ showConfirm, isDarkMode, isSubmitting, closeConfirm, han
             <div
                 className="w-[95vw] max-w-sm border border-[var(--border-color)] bg-[var(--bg-secondary)] p-8 relative shadow-2xl animate-in zoom-in-95 duration-200"
             >
-                {/* Accent Top Line */}
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-[var(--accent-gold)]" />
 
                 <h4 className="text-sm font-display font-bold uppercase tracking-wider text-[var(--accent-gold)] text-center mb-3">
                     {showConfirm.type === 'deleteAccount'

@@ -109,7 +109,6 @@ const TransactionFilters = ({
                         className="fixed left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-lg p-6 bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-2xl relative"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--accent-gold)]" />
                         
                         <h4 className="text-sm font-display font-bold tracking-widest text-[var(--accent-gold)] mb-5 uppercase">
                             BỘ LỌC NÂNG CAO

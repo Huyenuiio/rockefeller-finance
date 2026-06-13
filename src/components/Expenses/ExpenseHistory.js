@@ -58,7 +58,7 @@ const ExpenseHistory = ({
                                     </td>
                                     <td className="text-center">
                                         <button
-                                            onClick={() => handleDeleteExpense(index)}
+                                            onClick={() => handleDeleteExpense(expense._id || index)}
                                             className="p-1.5 hover:text-red-500 text-[var(--text-muted)] transition focus:outline-none"
                                             aria-label="Xóa chi tiêu"
                                         >

@@ -57,6 +57,8 @@ function Login() {
         setTimeout(() => navigate('/home'), 1000);
       } else {
         toast.success('Đăng ký thành công! Đang chuyển sang đăng nhập...');
+        // Lưu password trước khi clear state để auto-login không bị mất giá trị
+        const registeredPassword = password;
         setIsLoginMode(true);
         setPassword('');
         setConfirmPassword('');
@@ -64,7 +66,7 @@ function Login() {
           try {
             const loginResponse = await axios.post(
               `${API_URL}/api/login`,
-              { username, password }
+              { username, password: registeredPassword }
             );
             localStorage.setItem('token', loginResponse.data.token);
             navigate('/home');
@@ -108,8 +110,6 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] px-4 transition-colors duration-300">
       <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <div className="w-full max-w-md p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl relative">
-        {/* Decorative Gold Header Line */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-[var(--accent-gold)]" />
 
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">

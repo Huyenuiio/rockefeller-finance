@@ -57,7 +57,7 @@ function Settings() {
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
       {/* Topbar */}
       <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
-        <div className="flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
               <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
@@ -75,7 +75,6 @@ function Settings() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         <section className="p-6 sm:p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-gold)]" />
 
           {error && (
             <div className="mb-6 border border-red-500/30 bg-red-500/5 text-red-500 px-4 py-3 text-xs font-display uppercase tracking-wider">

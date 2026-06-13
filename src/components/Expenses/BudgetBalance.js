@@ -17,7 +17,6 @@ const BudgetBalance = ({
     return (
         <section className="mb-6">
             <div className="p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-sm relative">
-                <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--accent-gold)]" />
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">

@@ -6,14 +6,13 @@ const AllocationCards = ({ categories, visibility, toggleVisibility, allocations
             <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-3 uppercase">
                 PHÂN BỔ NGÂN SÁCH HIỆN TẠI
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
                 {categories.map((cat) => (
                     <div
                         key={cat.value}
                         className="p-4 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-gold)] transition duration-200 cursor-pointer relative shadow-sm select-none"
                         onClick={() => toggleVisibility(cat.value)}
                     >
-                        <div className="absolute top-0 left-0 w-full h-[2px] opacity-40" style={{ backgroundColor: cat.color }} />
                         <div className="flex items-center gap-2 mb-2 pointer-events-none opacity-80">
                             <span className="scale-75 origin-left">{cat.icon}</span>
                             <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-[var(--text-muted)]">

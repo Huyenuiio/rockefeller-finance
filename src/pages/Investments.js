@@ -87,10 +87,10 @@ const Investments = () => {
     };
   }, [showSnackbar]);
 
-  // Tổng số tiền chỉ là cộng 2 trường này
+  // Tổng số tiền có thể đầu tư
   const totalAmount =
-    parseFloat(allocations.selfInvestment) +
-    parseFloat(allocations.emergency);
+    (parseFloat(allocations.selfInvestment) || 0) +
+    (parseFloat(allocations.emergency) || 0);
 
 
   // Helper: get current date in dd/mm/yyyy
@@ -169,7 +169,7 @@ const Investments = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // Nếu có warning từ backend
+      // Nếu có warning từ backend (nhưng vẫn lưu thành công)
       if (res.data && res.data.warning) {
         setSnackbarMsg(res.data.warning);
         setShowSnackbar(true);
@@ -177,8 +177,8 @@ const Investments = () => {
         setSnackbarMsg("Tạo giao dịch đầu tư thành công!");
         setShowSnackbar(true);
       }
-      // Cập nhật lại allocations
-      await axios.put(
+      // Cập nhật lại allocations (partial PUT)
+      const putRes = await axios.put(
         `${API_URL}/api/allocations`,
         {
           selfInvestment: newSelf,
@@ -188,9 +188,10 @@ const Investments = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      // Dùng dữ liệu thực tế từ server để đảm bảo đồng bộ
       setAllocations({
-        selfInvestment: newSelf,
-        emergency: newEmergency,
+        selfInvestment: putRes.data.selfInvestment ?? newSelf,
+        emergency: putRes.data.emergency ?? newEmergency,
       });
       // Reset form
       setInputAmount("");
@@ -257,7 +258,7 @@ const Investments = () => {
 
       {/* Topbar */}
       <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
-        <div className="flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
               <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>

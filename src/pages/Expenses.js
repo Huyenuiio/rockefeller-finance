@@ -219,7 +219,7 @@ function Expenses() {
         {snackbarMsg}
       </div>
       <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
-        <div className="flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
               <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
@@ -239,7 +239,6 @@ function Expenses() {
         ) : initialBudget === null || initialBudget === 0 ? (
           <section className="max-w-md mx-auto">
             <div className="p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-2xl relative">
-              <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--accent-gold)]" />
               <h2 className="text-xl font-display font-bold mb-6 text-center text-[var(--accent-gold)] uppercase tracking-wider">Thiết lập ngân sách</h2>
               <form onSubmit={handleBudgetSubmit} className="space-y-4">
                 <div>
@@ -294,7 +293,6 @@ function Expenses() {
               </div>
               <div className="flex flex-col gap-6">
                 <div className="border border-[var(--border-color)] bg-[var(--bg-secondary)] p-6 relative">
-                  <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--accent-gold)]" />
                   <ExpenseForm handleExpenseSubmit={handleExpenseSubmit} amount={amount} setAmount={setAmount} category={category} setCategory={setCategory} purpose={purpose} setPurpose={setPurpose} location={location} setLocation={setLocation} date={date} setDate={setDate} isSubmitting={isSubmitting} categories={categories} allocations={allocations} formatVND={formatVND} numberToWords={numberToWords} isDarkMode={isDarkMode} />
                 </div>
                 <AllocationCards categories={categories} visibility={visibility} toggleVisibility={toggleVisibility} allocations={allocations} formatVND={formatVND} isDarkMode={isDarkMode} />

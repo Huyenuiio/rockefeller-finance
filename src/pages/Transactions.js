@@ -115,7 +115,7 @@ const Transactions = () => {
         <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
             {/* Topbar */}
             <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
-                <div className="flex items-center justify-between px-4 py-4 max-w-7xl mx-auto">
+                <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
                     <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
                         <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
                           <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
@@ -169,7 +169,7 @@ const Transactions = () => {
 
                 {/* Ledger Table */}
                 <div className="border border-[var(--border-color)] bg-[var(--bg-secondary)] overflow-x-auto">
-                    {loading && (transactions || []).length === 0 ? (
+                    {loading && transactions.length === 0 ? (
                         <div className="text-center py-20 text-xs font-display uppercase tracking-widest text-[var(--text-muted)] animate-pulse">
                             Đang truy xuất dữ liệu sổ cái...
                         </div>

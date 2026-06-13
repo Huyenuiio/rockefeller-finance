@@ -77,8 +77,8 @@ const Sidebar = memo(() => {
   };
 
   useEffect(() => {
-    if (isMobile && isMobileMenuOpen) setIsMobileMenuOpen(false);
-  }, [location.pathname, isMobile, isMobileMenuOpen]);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) {
@@ -110,7 +110,7 @@ const Sidebar = memo(() => {
   `;
 
   const navItemBase =
-    'group flex items-center gap-3 px-4 py-3 rounded-none font-medium text-base transition-all duration-200 cursor-pointer select-none';
+    'group flex items-center px-4 py-3 rounded-none font-medium text-base transition-all duration-200 cursor-pointer select-none';
 
   const navItemActive = `
     ${colors.navItemActiveBg} ${colors.navItemActiveText}
@@ -128,7 +128,7 @@ const Sidebar = memo(() => {
     'p-1.5 rounded-none hover:bg-[rgba(var(--accent-gold-rgb),0.1)] text-[var(--accent-gold)] transition-all duration-200 border border-[var(--border-color)]';
 
   const logoutBtn =
-    'flex items-center gap-3 p-2.5 border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-red-500 hover:border-red-500 transition-all duration-200 w-full rounded-none';
+    'flex items-center p-2.5 border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-red-500 hover:border-red-500 transition-all duration-200 w-full rounded-none';
 
   const sidebarWidth = isCollapsed && !isMobile ? 72 : isMobile ? '80vw' : 270;
   const sidebarMinWidth = isCollapsed && !isMobile ? 72 : isMobile ? 0 : 270;
@@ -180,23 +180,29 @@ const Sidebar = memo(() => {
         aria-label="Sidebar navigation"
       >
         {/* Logo & Collapse */}
-        <div className="flex items-center justify-between px-4 py-5 border-b border-[var(--border-color)]">
-          {(!isCollapsed || isMobile) && (
-            <div className="flex items-center gap-3">
-              {/* Monogram Monolith R logo */}
-              <div className="w-10 h-10 border border-[var(--accent-gold)] flex items-center justify-center bg-black select-none">
-                <span className="font-display font-bold text-[var(--accent-gold)] text-xl">R</span>
-              </div>
-              <span className="text-xl font-display font-bold tracking-wider text-[var(--accent-gold)]">
-                ROCKEFELLER
-              </span>
+        <div 
+          className={`flex items-center border-b border-[var(--border-color)] py-5 px-4 transition-all duration-300 ${
+            isCollapsed && !isMobile ? 'justify-center' : 'justify-between'
+          }`}
+        >
+          <div 
+            className={`flex items-center overflow-hidden transition-all duration-300 ${
+              isCollapsed && !isMobile ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-[200px] opacity-100'
+            }`}
+          >
+            {/* Monogram Monolith R logo */}
+            <div className="w-10 h-10 border border-[var(--accent-gold)] flex items-center justify-center bg-black select-none flex-shrink-0">
+              <span className="font-display font-bold text-[var(--accent-gold)] text-xl">R</span>
             </div>
-          )}
+            <span className="text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] whitespace-nowrap ml-3">
+              ROCKEFELLER
+            </span>
+          </div>
           {/* Collapse button only on desktop */}
           {!isMobile && (
             <button
               onClick={toggleSidebar}
-              className={`${collapseBtn} hidden md:block`}
+              className={`${collapseBtn} hidden md:block flex-shrink-0`}
               aria-label={isCollapsed ? 'Mở sidebar' : 'Thu gọn sidebar'}
               tabIndex={0}
             >
@@ -206,16 +212,18 @@ const Sidebar = memo(() => {
         </div>
 
         {/* Quote */}
-        {(!isCollapsed || isMobile) && (
-          <div className="p-4 border-b border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)]">
-            <p className="text-xs italic flex items-start gap-2 text-[var(--text-secondary)]">
-              <AlertCircle size={14} className="text-[var(--accent-gold)] mt-0.5 flex-shrink-0" />
-              <span>
-                <span className="font-bold font-display text-[var(--accent-gold)]">38 LÁ THƯ:</span> "Kỷ luật là nền tảng của mọi vinh quang tài chính."
-              </span>
-            </p>
-          </div>
-        )}
+        <div 
+          className={`overflow-hidden transition-all duration-300 border-b border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)] ${
+            isCollapsed && !isMobile ? 'max-h-0 p-0 border-b-0 opacity-0 whitespace-nowrap delay-0 duration-200' : 'max-h-[120px] p-4 opacity-100 delay-100 duration-300'
+          }`}
+        >
+          <p className="text-xs italic flex items-start gap-2 text-[var(--text-secondary)] whitespace-normal">
+            <AlertCircle size={14} className="text-[var(--accent-gold)] mt-0.5 flex-shrink-0" />
+            <span>
+              <span className="font-bold font-display text-[var(--accent-gold)]">38 LÁ THƯ:</span> "Kỷ luật là nền tảng của mọi vinh quang tài chính."
+            </span>
+          </p>
+        </div>
 
         {/* Menu */}
         <ul className="flex-1 flex flex-col gap-1 py-4 overflow-y-auto">
@@ -228,23 +236,26 @@ const Sidebar = memo(() => {
                   className={`
                     ${navItemBase}
                     ${isActive ? navItemActive : navItemInactive}
-                    ${isCollapsed && !isMobile ? 'justify-center px-2 py-3' : ''}
                     focus:outline-none focus:ring-1 focus:ring-[var(--accent-gold)]
                   `}
                   title={item.label}
                   onClick={handleMenuItemClick}
                   tabIndex={isMobile ? (isMobileMenuOpen ? 0 : -1) : 0}
                   style={{
-                    transition: 'all 0.18s cubic-bezier(.77,0,.18,1)',
+                    transition: 'all 0.3s cubic-bezier(.77,0,.18,1)',
                     minHeight: 48,
+                    paddingLeft: isCollapsed && !isMobile ? '26px' : '16px',
+                    paddingRight: isCollapsed && !isMobile ? '26px' : '16px',
                   }}
                 >
-                  <item.icon size={20} className="transition-transform duration-200 group-hover:scale-105" />
-                  {(!isCollapsed || isMobile) && (
-                    <span className="font-display text-sm tracking-wider uppercase">
-                      {item.label}
-                    </span>
-                  )}
+                  <item.icon size={20} className="transition-transform duration-200 group-hover:scale-105 flex-shrink-0" />
+                  <span 
+                    className={`font-display text-sm tracking-wider uppercase transition-all duration-300 overflow-hidden whitespace-nowrap inline-block ${
+                      isCollapsed && !isMobile ? 'opacity-0 max-w-0 ml-0 delay-0 duration-200' : 'opacity-100 max-w-[200px] ml-3 delay-150 duration-300'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </Link>
               </li>
             );
@@ -252,19 +263,35 @@ const Sidebar = memo(() => {
         </ul>
 
         {/* Bottom actions */}
-        <div className="w-full p-4 border-t border-[var(--border-color)] mt-auto flex flex-col gap-2">
+        <div 
+          className={`w-full border-t border-[var(--border-color)] mt-auto flex flex-col gap-2 transition-all duration-300 ${
+            isCollapsed && !isMobile ? 'p-0 py-4' : 'p-4'
+          }`}
+        >
           <button
             onClick={() => {
               handleLogout();
               if (isMobile) setIsMobileMenuOpen(false);
             }}
-            className={`${logoutBtn} ${(isCollapsed && !isMobile) ? 'justify-center px-2 py-3' : ''}`}
+            className={`${logoutBtn} ${isCollapsed && !isMobile ? 'border-0' : 'border'}`}
             title={isCollapsed && !isMobile ? 'Đăng xuất' : ''}
             aria-label="Đăng xuất"
-            tabIndex={0}
+            tabIndex={isMobile ? (isMobileMenuOpen ? 0 : -1) : 0}
+            style={{
+              transition: 'all 0.3s cubic-bezier(.77,0,.18,1)',
+              paddingLeft: isCollapsed && !isMobile ? '27px' : '10px',
+              paddingRight: isCollapsed && !isMobile ? '27px' : '10px',
+              justifyContent: 'flex-start',
+            }}
           >
-            <LogOut size={18} />
-            {(!isCollapsed || isMobile) && <span className="font-display text-xs tracking-wider uppercase">Đăng xuất</span>}
+            <LogOut size={18} className="flex-shrink-0" />
+            <span 
+              className={`font-display text-xs tracking-wider uppercase transition-all duration-300 overflow-hidden whitespace-nowrap inline-block ${
+                isCollapsed && !isMobile ? 'opacity-0 max-w-0 ml-0 delay-0 duration-200' : 'opacity-100 max-w-[200px] ml-3 delay-150 duration-300'
+              }`}
+            >
+              Đăng xuất
+            </span>
           </button>
         </div>
       </nav>

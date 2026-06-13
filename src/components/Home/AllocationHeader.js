@@ -6,8 +6,6 @@ const AllocationHeader = ({ categories, totalAmount, allocations, visibility, to
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Total Balance Card */}
             <div className="p-6 border border-[var(--border-color)] col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col items-center justify-center bg-[var(--bg-secondary)] relative shadow-sm">
-                {/* Gold accent top bar */}
-                <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--accent-gold)]" />
                 
                 <div className="flex items-center justify-center gap-3 mb-2">
                     <Shield size={18} className="text-[var(--accent-gold)]" />
@@ -40,7 +38,6 @@ const AllocationHeader = ({ categories, totalAmount, allocations, visibility, to
                     className="p-5 border border-[var(--border-color)] flex flex-col items-center justify-center bg-[var(--bg-secondary)] hover:border-[var(--accent-gold)] transition duration-200 cursor-pointer relative shadow-sm select-none"
                     onClick={() => toggleVisibility(cat.value)}
                 >
-                    <div className="absolute top-0 left-0 w-full h-[2px] opacity-40" style={{ backgroundColor: cat.color }} />
                     <span className="mb-2 opacity-90">{cat.icon}</span>
                     <h3 className="text-[10px] font-sans font-bold tracking-widest text-[var(--text-muted)] text-center uppercase mb-2">
                         {cat.label}
