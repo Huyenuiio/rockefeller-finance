@@ -57,15 +57,7 @@ function Expenses() {
 
 
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.style.background = '#111827';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.background = '#F3F4F6';
-    }
-  }, [isDarkMode]);
+
 
   const showNotification = (message) => {
     setSnackbarMsg(message);
@@ -211,7 +203,7 @@ function Expenses() {
     parseFloat(allocations.charity || 0) +
     parseFloat(allocations.emergency || 0);
 
-  const sortedExpenses = [...expenses].reverse();
+  const sortedExpenses = [...expenses];
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]" style={{ minHeight: '100vh', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
@@ -222,7 +214,7 @@ function Expenses() {
         <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
-              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+              <span className="font-display font-black text-[var(--accent-gold)] text-xl leading-none">R</span>
             </div>
             QUẢN LÝ CHI TIÊU
           </h1>
@@ -276,37 +268,46 @@ function Expenses() {
             </div>
           </section>
         ) : (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4 sm:gap-6 lg:gap-8">
             <ExpenseDashboardHeader initialBudget={initialBudget} totalExpenses={expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0)} expenses={expenses} visibility={visibility} toggleVisibility={toggleVisibility} formatVND={formatVND} isDarkMode={isDarkMode} onDeposit={handleDepositClick} />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 flex flex-col gap-8">
-                <SpendingChart categories={categories} allocations={allocations} isDarkMode={isDarkMode} formatVND={formatVND} />
-                <section>
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] uppercase flex items-center gap-2">HOẠT ĐỘNG GẦN ĐÂY</h2>
-                    <button onClick={() => navigate('/transactions')} className="text-xs font-display font-bold tracking-wider uppercase text-[var(--accent-gold)] hover:text-[var(--accent-gold-hover)] flex items-center gap-1">Xem tất cả</button>
-                  </div>
-                  <div className="border border-[var(--border-color)] bg-[var(--bg-secondary)] overflow-hidden">
-                    <ExpenseHistory sortedExpenses={sortedExpenses.slice(0, 5)} showAllExpenses={false} setShowAllExpenses={() => navigate('/transactions')} handleDeleteExpense={handleDeleteExpense} expenses={expenses} formatVND={formatVND} isDarkMode={isDarkMode} COLLAPSED_COUNT={5} />
-                  </div>
-                </section>
-              </div>
-              <div className="flex flex-col gap-6">
-                <div className="border border-[var(--border-color)] bg-[var(--bg-secondary)] p-6 relative">
-                  <ExpenseForm handleExpenseSubmit={handleExpenseSubmit} amount={amount} setAmount={setAmount} category={category} setCategory={setCategory} purpose={purpose} setPurpose={setPurpose} location={location} setLocation={setLocation} date={date} setDate={setDate} isSubmitting={isSubmitting} categories={categories} allocations={allocations} formatVND={formatVND} numberToWords={numberToWords} isDarkMode={isDarkMode} />
-                </div>
+            <div className="flex flex-col lg:grid lg:grid-cols-3 lg:grid-rows-[auto_auto_auto] gap-4 sm:gap-6 lg:gap-8">
+              {/* 1. Allocation Cards (Mobile: 1st, Desktop: Row 2, Col 3) */}
+              <div className="order-1 lg:order-none lg:col-span-1 lg:col-start-3 lg:row-start-2">
                 <AllocationCards categories={categories} visibility={visibility} toggleVisibility={toggleVisibility} allocations={allocations} formatVND={formatVND} isDarkMode={isDarkMode} />
-                {totalAmount > 0 && (
-                  <div className="p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-gold)] transition duration-200 cursor-pointer select-none" onClick={() => toggleVisibility('totalAllocations')}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-[10px] font-display font-bold tracking-wider uppercase text-[var(--text-muted)]">TỔNG CHI TIÊU HẠN MỨC</h3>
-                      <div className="p-1.5 border border-[var(--border-color)] text-[var(--accent-gold)]"><TrendingDown size={16} /></div>
-                    </div>
-                    <p className="text-2xl font-mono font-bold text-[var(--text-primary)]">{visibility.totalAllocations ? formatVND(totalAmount) : '••••••••'}</p>
-                    <p className="text-[10px] uppercase tracking-wider font-display text-[var(--text-muted)] mt-1 font-medium">{visibility.totalAllocations ? numberToWords(totalAmount) : 'Nhấp để xem bằng chữ'}</p>
-                  </div>
-                )}
               </div>
+
+              {/* 2. Expense Form (Mobile: 2nd, Desktop: Row 1, Col 3) */}
+              <div className="order-2 lg:order-none lg:col-span-1 lg:col-start-3 lg:row-start-1 border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 md:p-6 relative">
+                <ExpenseForm handleExpenseSubmit={handleExpenseSubmit} amount={amount} setAmount={setAmount} category={category} setCategory={setCategory} purpose={purpose} setPurpose={setPurpose} location={location} setLocation={setLocation} date={date} setDate={setDate} isSubmitting={isSubmitting} categories={categories} allocations={allocations} formatVND={formatVND} numberToWords={numberToWords} isDarkMode={isDarkMode} />
+              </div>
+
+              {/* 3. Recent Activities / Expense History (Mobile: 3rd, Desktop: Row 2, Col 1-2) */}
+              <section className="order-3 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-2 flex flex-col">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] uppercase flex items-center gap-2">HOẠT ĐỘNG GẦN ĐÂY</h2>
+                  <button onClick={() => navigate('/transactions')} className="text-xs font-display font-bold tracking-wider uppercase text-[var(--accent-gold)] hover:text-[var(--accent-gold-hover)] flex items-center gap-1">Xem tất cả</button>
+                </div>
+                <div className="border border-[var(--border-color)] bg-[var(--bg-secondary)] overflow-hidden">
+                  <ExpenseHistory sortedExpenses={sortedExpenses.slice(0, 5)} showAllExpenses={false} setShowAllExpenses={() => navigate('/transactions')} handleDeleteExpense={handleDeleteExpense} expenses={expenses} formatVND={formatVND} isDarkMode={isDarkMode} COLLAPSED_COUNT={5} />
+                </div>
+              </section>
+
+              {/* 4. Spending Chart (Mobile: 4th, Desktop: Row 1, Col 1-2) */}
+              <div className="order-4 lg:order-none lg:col-span-2 lg:col-start-1 lg:row-start-1">
+                <SpendingChart categories={categories} allocations={allocations} isDarkMode={isDarkMode} formatVND={formatVND} />
+              </div>
+
+              {/* 5. Total Allocations Card (Mobile: 5th, Desktop: Row 3, Col 3) */}
+              {totalAmount > 0 && (
+                <div className="order-5 lg:order-none lg:col-span-1 lg:col-start-3 lg:row-start-3 p-5 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-gold)] transition duration-200 cursor-pointer select-none" onClick={() => toggleVisibility('totalAllocations')}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-[10px] font-display font-bold tracking-wider uppercase text-[var(--text-muted)]">TỔNG CHI TIÊU HẠN MỨC</h3>
+                    <div className="p-1.5 border border-[var(--border-color)] text-[var(--accent-gold)]"><TrendingDown size={16} /></div>
+                  </div>
+                  <p className="text-2xl font-mono font-bold text-[var(--text-primary)]">{visibility.totalAllocations ? formatVND(totalAmount) : '••••••••'}</p>
+                  <p className="text-[10px] uppercase tracking-wider font-display text-[var(--text-muted)] mt-1 font-medium">{visibility.totalAllocations ? numberToWords(totalAmount) : 'Nhấp để xem bằng chữ'}</p>
+                </div>
+              )}
             </div>
           </div>
         )}

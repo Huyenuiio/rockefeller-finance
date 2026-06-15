@@ -114,7 +114,7 @@ function Login() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
-              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+              <span className="font-display font-black text-[var(--accent-gold)] text-xl leading-none">R</span>
             </div>
             <h2 className="text-xl font-display font-bold tracking-wider text-[var(--accent-gold)]">
               {isLoginMode ? 'ROCKEFELLER' : 'SIGN UP'}

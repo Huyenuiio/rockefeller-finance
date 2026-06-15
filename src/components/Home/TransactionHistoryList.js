@@ -26,11 +26,11 @@ const TransactionHistoryList = ({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onExportCSV}
-                        className="btn-gold-outline px-3 py-1.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5"
+                        className="btn-gold-outline px-3 py-1.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5 transition-colors duration-200"
                     >
                         Xuất CSV
                     </button>
-                    <label className="btn-gold-outline px-3 py-1.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5 cursor-pointer">
+                    <label className="btn-gold-outline px-3 py-1.5 text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1.5 cursor-pointer transition-colors duration-200">
                         Nhập CSV
                         <input
                             type="file"
@@ -49,7 +49,7 @@ const TransactionHistoryList = ({
                         <div key={monthYear} className="mb-4">
                             <button
                                 onClick={() => toggleMonth(monthYear)}
-                                className="w-full flex justify-between items-center p-3.5 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:bg-[rgba(var(--accent-gold-rgb),0.04)] font-display text-xs tracking-wider uppercase transition focus:outline-none rounded-none"
+                                className="w-full flex justify-between items-center p-3.5 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:bg-[rgba(var(--accent-gold-rgb),0.02)] hover:border-[var(--accent-gold)] font-display text-xs tracking-wider uppercase transition-all duration-300 focus:outline-none rounded-none"
                                 aria-expanded={!!expandedMonths[monthYear]}
                                 aria-controls={`transactions-${monthYear}`}
                             >
@@ -65,46 +65,81 @@ const TransactionHistoryList = ({
                             {expandedMonths[monthYear] && (
                                 <div
                                     id={`transactions-${monthYear}`}
-                                    className="overflow-x-auto border-x border-b border-[var(--border-color)] bg-[var(--bg-secondary)]"
+                                    className="overflow-hidden border-x border-b border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm transition-all duration-300"
                                 >
-                                    <table className="rockefeller-table min-w-full">
-                                        <thead>
-                                            <tr>
-                                                <th className="w-1/4">Danh mục</th>
-                                                <th className="w-1/4">Chi tiết</th>
-                                                <th className="w-1/6">Địa điểm</th>
-                                                <th className="w-1/6">Thời gian</th>
-                                                <th className="w-1/6 text-right">Số tiền</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {sortTransactionsByDateDesc(paginatedGrouped[monthYear]).map((transaction, index) => {
-                                                const cat = categories.find(c => c.value === transaction.category);
-                                                return (
-                                                    <tr key={index} className="transition-colors hover:bg-[rgba(var(--accent-gold-rgb),0.02)]">
-                                                        <td className="font-medium">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="scale-75 flex-shrink-0">{cat?.icon}</span>
-                                                                <span className="text-xs uppercase tracking-wider font-display">{cat?.label?.split(' (')[0] || 'Khác'}</span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="truncate max-w-[150px] font-sans text-xs">
+                                    {/* Desktop Table View */}
+                                    <div className="hidden md:block overflow-x-auto">
+                                        <table className="rockefeller-table min-w-full">
+                                            <thead>
+                                                <tr>
+                                                    <th className="w-1/4">Danh mục</th>
+                                                    <th className="w-1/4">Chi tiết</th>
+                                                    <th className="w-1/6">Địa điểm</th>
+                                                    <th className="w-1/6">Thời gian</th>
+                                                    <th className="w-1/6 text-right">Số tiền</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {sortTransactionsByDateDesc(paginatedGrouped[monthYear]).map((transaction, index) => {
+                                                    const cat = categories.find(c => c.value === transaction.category);
+                                                    return (
+                                                        <tr key={index} className="transition-colors hover:bg-[rgba(var(--accent-gold-rgb),0.02)]">
+                                                            <td className="font-medium">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="scale-75 flex-shrink-0">{cat?.icon}</span>
+                                                                    <span className="text-xs uppercase tracking-wider font-display">{cat?.label?.split(' (')[0] || 'Khác'}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="truncate max-w-[150px] font-sans text-xs">
+                                                                {transaction.details || <span className="italic text-[var(--text-muted)]">-</span>}
+                                                            </td>
+                                                            <td className="truncate max-w-[120px] font-sans text-xs">
+                                                                {transaction.location || <span className="italic text-[var(--text-muted)]">-</span>}
+                                                            </td>
+                                                            <td className="font-mono text-[11px] opacity-80">
+                                                                {transaction.timestamp ? transaction.timestamp.split(' ')[0] : '-'}
+                                                            </td>
+                                                            <td className="text-right font-mono font-bold text-xs text-[var(--text-primary)]">
+                                                                {formatVND(transaction.amount)}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Mobile List View (ul/li) */}
+                                    <ul className="divide-y divide-[var(--border-color)] md:hidden">
+                                        {sortTransactionsByDateDesc(paginatedGrouped[monthYear]).map((transaction, index) => {
+                                            const cat = categories.find(c => c.value === transaction.category);
+                                            return (
+                                                <li key={index} className="p-4 flex items-center justify-between hover:bg-[rgba(var(--accent-gold-rgb),0.02)] transition-colors duration-200">
+                                                    <div className="flex flex-col gap-1 min-w-0 pr-4">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="scale-75 flex-shrink-0">{cat?.icon}</span>
+                                                            <span className="font-display font-bold text-xs uppercase tracking-wider text-[var(--accent-gold)]">
+                                                                {cat?.label?.split(' (')[0] || 'Khác'}
+                                                            </span>
+                                                        </div>
+                                                        <span className="font-sans text-xs text-[var(--text-primary)] truncate ml-6">
                                                             {transaction.details || <span className="italic text-[var(--text-muted)]">-</span>}
-                                                        </td>
-                                                        <td className="truncate max-w-[120px] font-sans text-xs">
-                                                            {transaction.location || <span className="italic text-[var(--text-muted)]">-</span>}
-                                                        </td>
-                                                        <td className="font-mono text-[11px] opacity-80">
-                                                            {transaction.timestamp ? transaction.timestamp.split(' ')[0] : '-'}
-                                                        </td>
-                                                        <td className="text-right font-mono font-bold text-xs text-[var(--text-primary)]">
+                                                        </span>
+                                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-[var(--text-muted)] font-medium ml-6">
+                                                            <span className="truncate">{transaction.location || '-'}</span>
+                                                            <span>•</span>
+                                                            <span className="font-mono">{transaction.timestamp ? transaction.timestamp.split(' ')[0] : '-'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-shrink-0">
+                                                        <span className="font-mono font-bold text-xs text-[var(--text-primary)]">
                                                             {formatVND(transaction.amount)}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                                                        </span>
+                                                    </div>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
                                 </div>
                             )}
                         </div>
@@ -115,7 +150,7 @@ const TransactionHistoryList = ({
                         <button
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className="btn-gold-outline py-2 px-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30 disabled:hover:bg-transparent"
+                            className="btn-gold-outline py-2 px-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30 disabled:hover:bg-transparent transition-all duration-200"
                         >
                             Trang trước
                         </button>
@@ -125,7 +160,7 @@ const TransactionHistoryList = ({
                         <button
                             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1))}
                             disabled={currentPage === (totalPages || 1)}
-                            className="btn-gold-outline py-2 px-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30 disabled:hover:bg-transparent"
+                            className="btn-gold-outline py-2 px-4 text-xs font-bold uppercase tracking-widest disabled:opacity-30 disabled:hover:bg-transparent transition-all duration-200"
                         >
                             Trang sau
                         </button>

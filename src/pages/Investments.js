@@ -261,7 +261,7 @@ const Investments = () => {
         <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
-              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+              <span className="font-display font-black text-[var(--accent-gold)] text-xl leading-none">R</span>
             </div>
             ỦY THÁC ĐẦU TƯ
           </h1>

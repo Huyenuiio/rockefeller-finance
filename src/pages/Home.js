@@ -43,7 +43,6 @@ function Home() {
   const [expandedMonths, setExpandedMonths] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // State mới để quản lý ẩn/hiện cho từng phần tử
   const [visibility, setVisibility] = useState(initialVisibilityState);
@@ -80,14 +79,6 @@ function Home() {
       mainRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [currentPage]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 200);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -364,7 +355,7 @@ function Home() {
         <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
-              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+              <span className="font-display font-black text-[var(--accent-gold)] text-xl leading-none">R</span>
             </div>
             BẢNG ĐIỀU KHIỂN
           </h1>
@@ -445,18 +436,6 @@ function Home() {
           </>
         )}
       </main>
-
-      {showScrollTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-6 z-50 p-3 bg-[var(--accent-gold)] text-black border border-black shadow-lg hover:bg-[var(--accent-gold-hover)] transition focus:outline-none rounded-none"
-          aria-label="Lên đầu trang"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l-6-6-6 6" />
-          </svg>
-        </button>
-      )}
     </div>
   );
 }

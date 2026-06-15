@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle, List } from 'lucide-react';
+import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_URL } from '../config';
 
@@ -149,12 +149,12 @@ const Sidebar = memo(() => {
       <button
         className={mobileMenuBtn}
         onClick={toggleMobileMenu}
-        aria-label={isMobileMenuOpen ? 'Đóng menu' : 'Mở menu'}
+        aria-label="Mở menu"
         style={{
-          display: isMobile ? 'block' : 'none',
+          display: isMobile && !isMobileMenuOpen ? 'block' : 'none',
         }}
       >
-        {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+        <Menu size={28} />
       </button>
       {/* Sidebar */}
       <nav
@@ -185,28 +185,46 @@ const Sidebar = memo(() => {
             isCollapsed && !isMobile ? 'justify-center' : 'justify-between'
           }`}
         >
+          {/* Logo container - clickable when collapsed on desktop */}
           <div 
-            className={`flex items-center overflow-hidden transition-all duration-300 ${
-              isCollapsed && !isMobile ? 'max-w-0 opacity-0 pointer-events-none' : 'max-w-[200px] opacity-100'
+            onClick={isCollapsed && !isMobile ? toggleSidebar : undefined}
+            className={`flex items-center select-none ${
+              isCollapsed && !isMobile ? 'cursor-pointer hover:scale-105 transition-transform duration-200' : ''
             }`}
+            title={isCollapsed && !isMobile ? 'Mở rộng sidebar' : ''}
           >
             {/* Monogram Monolith R logo */}
-            <div className="w-10 h-10 border border-[var(--accent-gold)] flex items-center justify-center bg-black select-none flex-shrink-0">
-              <span className="font-display font-bold text-[var(--accent-gold)] text-xl">R</span>
+            <div className="w-10 h-10 border border-[var(--accent-gold)] flex items-center justify-center bg-black select-none flex-shrink-0 transition-colors duration-200">
+              <span className="font-display font-black text-[var(--accent-gold)] text-2xl leading-none">R</span>
             </div>
-            <span className="text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] whitespace-nowrap ml-3">
+            <span 
+              className={`font-display font-bold tracking-wider text-[var(--accent-gold)] whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                isCollapsed && !isMobile 
+                  ? 'max-w-0 opacity-0 ml-0 pointer-events-none' 
+                  : 'text-xl max-w-[240px] opacity-100 ml-3'
+              }`}
+            >
               ROCKEFELLER
             </span>
           </div>
-          {/* Collapse button only on desktop */}
-          {!isMobile && (
+
+          {/* Collapse button on desktop, Close button on mobile */}
+          {!isMobile ? (
             <button
               onClick={toggleSidebar}
-              className={`${collapseBtn} hidden md:block flex-shrink-0`}
+              className={`${collapseBtn} ${isCollapsed ? 'hidden' : 'block'} md:block flex-shrink-0`}
               aria-label={isCollapsed ? 'Mở sidebar' : 'Thu gọn sidebar'}
               tabIndex={0}
             >
-              {isCollapsed ? <Menu size={20} /> : <X size={20} />}
+              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
+          ) : (
+            <button
+              onClick={toggleMobileMenu}
+              className={`${collapseBtn} flex-shrink-0`}
+              aria-label="Đóng menu"
+            >
+              <X size={20} />
             </button>
           )}
         </div>
@@ -296,9 +314,11 @@ const Sidebar = memo(() => {
         </div>
       </nav>
       {/* Overlay for mobile */}
-      {isMobile && isMobileMenuOpen && (
+      {isMobile && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 md:hidden transition-all duration-300"
+          className={`fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 md:hidden transition-all duration-500 ease-[cubic-bezier(.77,0,.18,1)] ${
+            isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
           onClick={toggleMobileMenu}
           aria-label="Đóng menu"
         ></div>

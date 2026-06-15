@@ -6,11 +6,11 @@ const AllocationCards = ({ categories, visibility, toggleVisibility, allocations
             <h2 className="text-xs font-display font-bold tracking-widest text-[var(--accent-gold)] mb-3 uppercase">
                 PHÂN BỔ NGÂN SÁCH HIỆN TẠI
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+            <ul className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
                 {categories.map((cat) => (
-                    <div
+                    <li
                         key={cat.value}
-                        className="p-4 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-gold)] transition duration-200 cursor-pointer relative shadow-sm select-none"
+                        className="p-4 border border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-[var(--accent-gold)] transition duration-200 cursor-pointer relative shadow-sm select-none last:col-span-2 sm:last:col-span-1"
                         onClick={() => toggleVisibility(cat.value)}
                     >
                         <div className="flex items-center gap-2 mb-2 pointer-events-none opacity-80">
@@ -25,9 +25,9 @@ const AllocationCards = ({ categories, visibility, toggleVisibility, allocations
                             </span>
                             <span className="text-[9px] font-sans font-bold text-[var(--text-muted)] uppercase tracking-widest mt-0.5">Số dư khả dụng</span>
                         </div>
-                    </div>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </section>
     );
 };

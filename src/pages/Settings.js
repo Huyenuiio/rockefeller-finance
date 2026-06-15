@@ -60,13 +60,13 @@ function Settings() {
         <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
             <div className="w-8 h-8 border border-[var(--accent-gold)] flex items-center justify-center bg-black">
-              <span className="font-display font-bold text-[var(--accent-gold)] text-sm">R</span>
+              <span className="font-display font-black text-[var(--accent-gold)] text-xl leading-none">R</span>
             </div>
             THIẾT LẬP HỆ THỐNG
           </h1>
           <button
             onClick={handleToggleTheme}
-            className="btn-gold-outline px-4 py-2 text-xs font-display font-bold uppercase tracking-widest"
+            className="btn-gold-outline px-4 py-2 text-xs font-display font-bold uppercase tracking-widest transition-all duration-200"
           >
             {isDarkMode ? 'Giao diện sáng' : 'Giao diện tối'}
           </button>
@@ -74,8 +74,8 @@ function Settings() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <section className="p-6 sm:p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative">
-
+        {/* Single Bezel Panel */}
+        <section className="p-6 sm:p-8 border border-[var(--border-color)] bg-[var(--bg-card)] relative shadow-sm hover:border-[var(--accent-gold)] transition-all duration-300">
           {error && (
             <div className="mb-6 border border-red-500/30 bg-red-500/5 text-red-500 px-4 py-3 text-xs font-display uppercase tracking-wider">
               {error}

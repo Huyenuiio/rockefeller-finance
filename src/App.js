@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -51,6 +51,16 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppLayout() {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 200);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <Sidebar />
@@ -58,7 +68,7 @@ function AppLayout() {
         className="flex-1 flex flex-col transition-all duration-500 ease-[cubic-bezier(.77,0,.18,1)]"
         style={{ paddingLeft: 'var(--sidebar-width, 0px)' }}
       >
-        <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 w-full overflow-x-hidden">
+        <div className="flex-1 w-full overflow-x-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
@@ -67,8 +77,20 @@ function AppLayout() {
             <Route path="/investments" element={<Investments />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
-        </main>
+        </div>
       </div>
+
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 right-6 z-50 p-3 bg-[var(--accent-gold)] text-black border border-black shadow-lg hover:bg-[var(--accent-gold-hover)] transition focus:outline-none rounded-none"
+          aria-label="Lên đầu trang"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18 15l-6-6-6 6" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

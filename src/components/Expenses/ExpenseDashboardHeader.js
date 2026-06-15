@@ -82,9 +82,9 @@ const ExpenseDashboardHeader = ({
     }
 
     return (
-        <div className="relative overflow-hidden p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-lg group">
+        <div className="relative overflow-hidden p-5 md:p-8 border border-[var(--border-color)] bg-[var(--bg-secondary)] shadow-lg group">
 
-            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-5 md:gap-8">
                 {/* Balance Info */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-3 border border-[var(--border-color)] bg-black px-4 py-2 select-none">

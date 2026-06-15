@@ -11,7 +11,7 @@ const AllocationChart = ({ chartData, chartOptions, recentTransactionsForChart, 
                 <PieChart size={16} />
                 PHÂN TÍCH CHI TIÊU THỰC TẾ
             </h3>
-            <div className="p-6 border border-[var(--border-color)] bg-[var(--bg-secondary)] relative shadow-sm">
+            <div className="p-6 border border-[var(--border-color)] bg-[var(--bg-card)] relative shadow-sm hover:border-[var(--accent-gold)] transition-all duration-300">
                 {recentTransactionsForChart.length > 0 ? (
                     <div className="relative" style={{ height: '260px', minHeight: '200px' }}>
                         <Doughnut data={chartData} options={chartOptions} />
