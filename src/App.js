@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FinanceProvider } from './contexts/FinanceContext';
-import { API_URL } from './config';
 // import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
@@ -17,29 +15,9 @@ import Login from './components/Login';
 import Settings from './pages/Settings';
 
 
-// Component kiểm tra quyền truy cập + check initialBudget bằng axios
+// Component kiểm tra quyền truy cập (không khóa cưỡng bức người dùng vào một trang duy nhất)
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkBudget = async () => {
-      if (token) {
-        try {
-          const response = await axios.get(`${API_URL}/api/initial-budget`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.data.initialBudget === 0) {
-            navigate('/expenses');
-          }
-        } catch (err) {
-          console.error('Lỗi kiểm tra ngân sách:', err);
-          navigate('/login');
-        }
-      }
-    };
-    checkBudget();
-  }, [token, navigate]);
 
   return token ? (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

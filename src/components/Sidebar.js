@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, DollarSign, Briefcase, Settings, LogOut, Menu, X, AlertCircle, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_URL } from '../config';
+import feedback from '../utils/feedback';
 
 // Responsive, modern Sidebar with Rockefeller aesthetic (rigid, standard gold & obsidian)
 const Sidebar = memo(() => {
@@ -58,6 +59,7 @@ const Sidebar = memo(() => {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
+      feedback.warning();
       localStorage.removeItem('token');
       navigate('/login');
       toast.success('Đăng xuất thành công!');
@@ -68,11 +70,16 @@ const Sidebar = memo(() => {
 
   const toggleSidebar = () => {
     if (isMobile) return;
+    feedback.tap();
     setIsCollapsed((c) => !c);
   };
-  const toggleMobileMenu = () => setIsMobileMenuOpen((m) => !m);
+  const toggleMobileMenu = () => {
+    feedback.tap();
+    setIsMobileMenuOpen((m) => !m);
+  };
 
   const handleMenuItemClick = () => {
+    feedback.tap();
     if (isMobile) setIsMobileMenuOpen(false);
   };
 

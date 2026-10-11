@@ -2,11 +2,12 @@ const units = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám
 const scales = ['', 'nghìn', 'triệu', 'tỷ'];
 
 function numberToWords(number) {
-  if (number === 0) return 'không đồng';
+  const parsed = parseFloat(number);
+  if (isNaN(parsed) || parsed === 0) return 'không đồng';
 
   // Xử lý số âm
-  const isNegative = number < 0;
-  number = Math.abs(number);
+  const isNegative = parsed < 0;
+  number = Math.abs(parsed);
 
   // Chuyển số thành chuỗi và chia thành các nhóm 3 chữ số
   const numStr = Math.floor(number).toString();

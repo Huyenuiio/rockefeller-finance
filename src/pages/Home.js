@@ -8,10 +8,11 @@ import TransactionFilters from '../components/Home/TransactionFilters';
 import TransactionHistoryList from '../components/Home/TransactionHistoryList';
 import { categories } from '../constants/categories';
 import { FinanceContext } from '../contexts/FinanceContext';
-import numberToWords from '../utils/numberToWords';
+import { formatVND, numberToWords } from '../utils/formatters';
 import { parseTransactionDate, parseVietnameseMonthYear } from '../utils/dateHelpers';
 import { exportToCSV, parseCSV } from '../utils/csvHelpers';
 import { API_URL } from '../config';
+import DepositModal from '../components/Expenses/DepositModal';
 import '../styles/pages/Home.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -46,8 +47,11 @@ function Home() {
 
   // State mới để quản lý ẩn/hiện cho từng phần tử
   const [visibility, setVisibility] = useState(initialVisibilityState);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [newBudget, setNewBudget] = useState('');
+  const [isDepositSubmitting, setIsDepositSubmitting] = useState(false);
 
-  const transactionsPerPage = 6;
+  const transactionsPerPage = 10;
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const mainRef = useRef(null);
@@ -97,8 +101,11 @@ function Home() {
           }),
         ]);
         setAllocations(allocRes.data);
+        const rawExpenses = Array.isArray(expenseRes.data) 
+          ? expenseRes.data 
+          : (expenseRes.data?.expenses || []);
         setTransactionHistory(
-          expenseRes.data.map((tx) => ({
+          rawExpenses.map((tx) => ({
             ...tx,
             category: {
               'Tiêu dùng thiết yếu': 'essentials',
@@ -129,22 +136,22 @@ function Home() {
   }, [token, navigate]);
 
 
-  const formatVND = (value) => {
-    const num = parseFloat(value) || 0;
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
-  };
 
   const totalAmount = useMemo(() =>
     categories.reduce((sum, cat) => sum + parseFloat(allocations[cat.value] || 0), 0)
     , [allocations]);
 
-  const recentTransactionsForChart = transactionHistory.slice(0, 5);
-  const categoryTotals = categories.reduce((acc, cat) => {
-    acc[cat.value] = recentTransactionsForChart
-      .filter((tx) => tx?.category === cat.value)
-      .reduce((sum, tx) => sum + (parseFloat(tx?.amount) || 0), 0);
-    return acc;
-  }, { essentials: 0, savings: 0, selfInvestment: 0, charity: 0, emergency: 0 });
+  // Tính toán chi tiêu thực tế dựa trên toàn bộ giao dịch hoặc dữ liệu khả dụng
+  const categoryTotals = useMemo(() => {
+    return categories.reduce((acc, cat) => {
+      acc[cat.value] = transactionHistory
+        .filter((tx) => tx?.category === cat.value)
+        .reduce((sum, tx) => sum + (parseFloat(tx?.amount) || 0), 0);
+      return acc;
+    }, { essentials: 0, savings: 0, selfInvestment: 0, charity: 0, emergency: 0 });
+  }, [transactionHistory]);
+
+  const recentTransactionsForChart = transactionHistory.slice(0, 10);
 
   const chartData = {
     labels: categories.map((cat) => cat.label),
@@ -217,12 +224,20 @@ function Home() {
     });
   }, [transactionHistory, minAmount, maxAmount, searchDetails, searchLocation, selectedCategory, selectedMonthYear]);
 
-  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+  // Sắp xếp giảm dần theo thời gian trước khi phân trang
+  const sortedFilteredTransactions = useMemo(() => {
+    return [...filteredTransactions].sort((a, b) => {
+      if (!a?.timestamp || !b?.timestamp) return 0;
+      return parseTransactionDate(b.timestamp) - parseTransactionDate(a.timestamp);
+    });
+  }, [filteredTransactions]);
 
-  const paginatedTransactions = filteredTransactions
-    .slice()
-    .reverse()
-    .slice((currentPage - 1) * transactionsPerPage, currentPage * transactionsPerPage);
+  const totalPages = Math.ceil(sortedFilteredTransactions.length / transactionsPerPage) || 1;
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * transactionsPerPage;
+    return sortedFilteredTransactions.slice(start, start + transactionsPerPage);
+  }, [sortedFilteredTransactions, currentPage, transactionsPerPage]);
 
   const paginatedGrouped = useMemo(() => {
     const grouped = {};
@@ -316,8 +331,11 @@ function Home() {
           { expenses: parsedExpenses },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        const rawImportExpenses = Array.isArray(response.data)
+          ? response.data
+          : (response.data?.expenses || []);
         setTransactionHistory(
-          response.data.map((tx) => ({
+          rawImportExpenses.map((tx) => ({
             ...tx,
             category: {
               'Tiêu dùng thiết yếu': 'essentials',
@@ -394,6 +412,10 @@ function Home() {
               formatVND={formatVND}
               numberToWords={numberToWords}
               isDarkMode={isDarkMode}
+              onDeposit={() => {
+                setNewBudget('');
+                setIsDepositModalOpen(true);
+              }}
             />
 
             <AllocationChart
@@ -432,6 +454,41 @@ function Home() {
               isDarkMode={isDarkMode}
               onExportCSV={handleExportCSV}
               onImportCSV={handleImportCSV}
+            />
+
+            <DepositModal
+              isOpen={isDepositModalOpen}
+              onClose={() => setIsDepositModalOpen(false)}
+              newBudget={newBudget}
+              setNewBudget={setNewBudget}
+              handleBudgetSubmit={async (e) => {
+                e.preventDefault();
+                const parsed = parseFloat(newBudget);
+                if (isNaN(parsed) || parsed <= 0) {
+                  alert('Vui lòng nhập số tiền hợp lệ!');
+                  return;
+                }
+                setIsDepositSubmitting(true);
+                try {
+                  const res = await axios.post(
+                    `${API_URL}/api/initial-budget`,
+                    { initialBudget: parsed },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setAllocations(res.data.allocations);
+                  setIsDepositModalOpen(false);
+                  setNewBudget('');
+                  alert('Ngân sách đã được cập nhật thành công!');
+                } catch (err) {
+                  alert(err.response?.data?.error || 'Lỗi cập nhật ngân sách');
+                } finally {
+                  setIsDepositSubmitting(false);
+                }
+              }}
+              isSubmitting={isDepositSubmitting}
+              isDarkMode={isDarkMode}
+              formatVND={formatVND}
+              numberToWords={numberToWords}
             />
           </>
         )}

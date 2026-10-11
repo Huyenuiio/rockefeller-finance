@@ -15,11 +15,11 @@
   --bg-card: #FFFFFF;
   --border-color: #E2E8F0;
   --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #57687D;
-  --accent-gold: #8D6725;
-  --accent-gold-hover: #76541D;
-  --accent-gold-rgb: 141, 103, 37;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --accent-gold: #855F1B;
+  --accent-gold-hover: #6E4E14;
+  --accent-gold-rgb: 133, 95, 27;
   --sidebar-width: 270px;
 }
 
@@ -29,9 +29,9 @@
   --bg-secondary: #111318;
   --bg-card: #15181F;
   --border-color: #1E222A;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
   --accent-gold: #C59B27;
   --accent-gold-hover: #D4AF37;
   --accent-gold-rgb: 197, 155, 39;
@@ -40,6 +40,11 @@
 * {
   box-sizing: border-box;
   font-family: var(--font-sans);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent-gold) !important;
+  outline-offset: 2px !important;
 }
 
 body {
@@ -114,6 +119,7 @@ body {
 
   .rockefeller-card:hover {
     border-color: var(--accent-gold);
+    box-shadow: 0 8px 30px -4px rgba(var(--accent-gold-rgb), 0.12);
     transform: translateY(-2px);
   }
 

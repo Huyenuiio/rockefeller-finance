@@ -1,10 +1,13 @@
 import React from 'react';
-import { Trash2, ShoppingBag } from 'lucide-react';
+import { Trash2, ShoppingBag, Edit2 } from 'lucide-react';
 import { parseTransactionDate } from '../../utils/dateHelpers';
+import { getCategoryShortLabel } from '../../constants/categories';
+import feedback from '../../utils/feedback';
 
 const ExpenseHistory = ({
     sortedExpenses,
     handleDeleteExpense,
+    handleEditExpense,
     formatVND,
     isDarkMode,
 }) => {
@@ -36,22 +39,14 @@ const ExpenseHistory = ({
                                     <th className="w-1/6">Địa điểm</th>
                                     <th className="w-1/6">Ngày</th>
                                     <th className="w-1/6 text-right">Số tiền</th>
-                                    <th className="w-12 text-center">Tác vụ</th>
+                                    <th className="w-20 text-center">Tác vụ</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sortedExpenses.map((expense, index) => {
-                                    let catLabel = 'Khác';
-                                    if (expense.category) {
-                                        const lower = expense.category.toLowerCase();
-                                        if (lower.includes('essential')) catLabel = 'Thiết yếu';
-                                        else if (lower.includes('saving')) catLabel = 'Tiết kiệm';
-                                        else if (lower.includes('charity')) catLabel = 'Từ thiện';
-                                        else if (lower.includes('self')) catLabel = 'Đầu tư bản thân';
-                                        else if (lower.includes('emergency')) catLabel = 'Dự phòng';
-                                    }
+                                    const catLabel = getCategoryShortLabel(expense.category);
                                     return (
-                                        <tr key={index} className="transition-colors hover:bg-[rgba(var(--accent-gold-rgb),0.02)]">
+                                        <tr key={expense._id || index} className="transition-colors hover:bg-[rgba(var(--accent-gold-rgb),0.02)]">
                                             <td className="font-medium text-xs text-[var(--text-primary)]">
                                                 {expense.purpose}
                                             </td>
@@ -70,13 +65,32 @@ const ExpenseHistory = ({
                                                 -{formatVND(expense.amount)}
                                             </td>
                                             <td className="text-center">
-                                                <button
-                                                    onClick={() => handleDeleteExpense(expense._id || index)}
-                                                    className="p-1.5 hover:text-red-500 text-[var(--text-muted)] transition focus:outline-none"
-                                                    aria-label="Xóa chi tiêu"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                <div className="flex items-center justify-center gap-1">
+                                                    {handleEditExpense && (
+                                                        <button
+                                                            onClick={() => {
+                                                                feedback.tap();
+                                                                handleEditExpense(expense);
+                                                            }}
+                                                            className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center hover:text-[var(--accent-gold)] text-[var(--text-muted)] hover:bg-white/[0.04] transition focus:outline-none"
+                                                            title="Chỉnh sửa giao dịch"
+                                                            aria-label="Chỉnh sửa giao dịch"
+                                                        >
+                                                            <Edit2 size={13} />
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => {
+                                                            feedback.warning();
+                                                            handleDeleteExpense(expense);
+                                                        }}
+                                                        className="p-1.5 min-w-[32px] min-h-[32px] flex items-center justify-center hover:text-red-500 text-[var(--text-muted)] hover:bg-red-500/10 transition focus:outline-none"
+                                                        title="Xóa giao dịch"
+                                                        aria-label="Xóa giao dịch"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -88,15 +102,7 @@ const ExpenseHistory = ({
                     {/* Mobile List View (ul/li) */}
                     <ul className="divide-y divide-[var(--border-color)] md:hidden">
                         {sortedExpenses.map((expense, index) => {
-                            let catLabel = 'Khác';
-                            if (expense.category) {
-                                const lower = expense.category.toLowerCase();
-                                if (lower.includes('essential')) catLabel = 'Thiết yếu';
-                                else if (lower.includes('saving')) catLabel = 'Tiết kiệm';
-                                else if (lower.includes('charity')) catLabel = 'Từ thiện';
-                                else if (lower.includes('self')) catLabel = 'Đầu tư bản thân';
-                                else if (lower.includes('emergency')) catLabel = 'Dự phòng';
-                            }
+                            const catLabel = getCategoryShortLabel(expense.category);
                             return (
                                 <li key={expense._id || index} className="p-4 flex items-center justify-between hover:bg-[rgba(var(--accent-gold-rgb),0.02)] transition-colors">
                                     <div className="flex flex-col gap-1 min-w-0 pr-4">
@@ -113,13 +119,28 @@ const ExpenseHistory = ({
                                             <span className="font-mono">{formatDate(expense.date)}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                        <span className="font-mono font-bold text-xs text-rose-500">
+                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                        <span className="font-mono font-bold text-xs text-rose-500 mr-1">
                                             -{formatVND(expense.amount)}
                                         </span>
+                                        {handleEditExpense && (
+                                            <button
+                                                onClick={() => {
+                                                    feedback.tap();
+                                                    handleEditExpense(expense);
+                                                }}
+                                                className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center hover:text-[var(--accent-gold)] text-[var(--text-muted)] active:bg-white/[0.08] transition focus:outline-none"
+                                                aria-label="Chỉnh sửa chi tiêu"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                        )}
                                         <button
-                                            onClick={() => handleDeleteExpense(expense._id || index)}
-                                            className="p-2 hover:text-red-500 text-[var(--text-muted)] transition focus:outline-none"
+                                            onClick={() => {
+                                                feedback.warning();
+                                                handleDeleteExpense(expense);
+                                            }}
+                                            className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center hover:text-red-500 text-[var(--text-muted)] active:bg-red-500/10 transition focus:outline-none"
                                             aria-label="Xóa chi tiêu"
                                         >
                                             <Trash2 size={14} />

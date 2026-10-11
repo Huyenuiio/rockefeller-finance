@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { categories } from '../constants/categories';
 import { formatVND } from '../constants/investments';
-import { ChevronLeft, ChevronRight, Search, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, Trash2, Edit2 } from 'lucide-react';
 import { parseTransactionDate } from '../utils/dateHelpers';
 import { exportToCSV, parseCSV } from '../utils/csvHelpers';
+import { numberToWords } from '../constants/investments';
 import { API_URL } from '../config';
+import EditExpenseModal from '../components/Expenses/EditExpenseModal';
+import DeleteExpenseModal from '../components/Expenses/DeleteExpenseModal';
+import UndoToast from '../components/Common/UndoToast';
+import feedback from '../utils/feedback';
 
 const Transactions = () => {
     const [transactions, setTransactions] = useState([]);
+    const [allocations, setAllocations] = useState({});
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
@@ -18,14 +24,26 @@ const Transactions = () => {
     const [minAmount, setMinAmount] = useState('');
     const [maxAmount, setMaxAmount] = useState('');
     const [loading, setLoading] = useState(false);
+    const [editingExpense, setEditingExpense] = useState(null);
+    const [deletingExpense, setDeletingExpense] = useState(null);
+    const [lastDeletedExpense, setLastDeletedExpense] = useState(null);
+    const [notification, setNotification] = useState('');
     const token = localStorage.getItem('token');
+
+    const showNotify = (msg, undoExp = null) => {
+        setNotification(msg);
+        if (undoExp) setLastDeletedExpense(undoExp);
+        setTimeout(() => {
+            setNotification('');
+            setLastDeletedExpense(null);
+        }, undoExp ? 7000 : 3500);
+    };
 
     const fetchTransactions = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(
-                `${API_URL}/api/expenses`,
-                {
+            const [response, allocRes] = await Promise.all([
+                axios.get(`${API_URL}/api/expenses`, {
                     params: { 
                         page, 
                         limit: 15, 
@@ -37,10 +55,17 @@ const Transactions = () => {
                         maxAmount
                     },
                     headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-            setTransactions(response.data.expenses);
-            setTotalPages(response.data.totalPages);
+                }),
+                axios.get(`${API_URL}/api/allocations`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+            ]);
+            const expList = Array.isArray(response.data.expenses)
+                ? response.data.expenses
+                : (Array.isArray(response.data) ? response.data : []);
+            setTransactions(expList);
+            setTotalPages(response.data.totalPages || 1);
+            setAllocations(allocRes.data || {});
         } catch (err) {
             console.error('Error fetching transactions:', err);
         } finally {
@@ -134,20 +159,65 @@ const Transactions = () => {
         e.target.value = '';
     };
 
-    const handleDeleteExpense = async (idOrIndex) => {
-        const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa giao dịch này?");
-        if (!confirmDelete) return;
+    const handleSaveEdit = async (id, updatedData) => {
+        try {
+            await axios.put(
+                `${API_URL}/api/expenses/${id}`,
+                updatedData,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            feedback.success();
+            showNotify('Đã cập nhật giao dịch thành công!');
+            fetchTransactions();
+        } catch (err) {
+            console.error('Lỗi khi sửa giao dịch:', err);
+            showNotify(err.response?.data?.error || 'Không thể cập nhật giao dịch');
+        }
+    };
 
+    const handleConfirmDelete = async (expense) => {
+        if (!expense) return;
         try {
             setLoading(true);
             await axios.delete(
-                `${API_URL}/api/expenses/${idOrIndex}`,
+                `${API_URL}/api/expenses/${expense._id}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            feedback.warning();
+            setDeletingExpense(null);
+            showNotify(`Đã xóa giao dịch "${expense.purpose}"!`, expense);
             fetchTransactions();
         } catch (err) {
             console.error('Lỗi khi xóa giao dịch:', err);
-            alert(err.response?.data?.error || 'Không thể xóa giao dịch');
+            showNotify(err.response?.data?.error || 'Không thể xóa giao dịch');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUndoDelete = async () => {
+        if (!lastDeletedExpense) return;
+        const toRestore = { ...lastDeletedExpense };
+        setLastDeletedExpense(null);
+        setNotification('');
+        try {
+            setLoading(true);
+            await axios.post(
+                `${API_URL}/api/expenses`,
+                {
+                    amount: toRestore.amount,
+                    category: toRestore.category,
+                    purpose: toRestore.purpose,
+                    location: toRestore.location,
+                    date: toRestore.date,
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            feedback.success();
+            showNotify('Đã hoàn tác và khôi phục giao dịch thành công!');
+            fetchTransactions();
+        } catch (err) {
+            showNotify('Lỗi khi hoàn tác giao dịch');
         } finally {
             setLoading(false);
         }
@@ -315,7 +385,7 @@ const Transactions = () => {
                                             const formattedTime = txDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
                                             return (
-                                                <tr key={idx} className="transition-colors hover:bg-[rgba(var(--accent-gold-rgb),0.02)]">
+                                                <tr key={tx._id || tx.id || idx} className="transition-colors hover:bg-[rgba(var(--accent-gold-rgb),0.02)]">
                                                     <td className="font-medium text-xs text-[var(--text-primary)]">
                                                         {tx.purpose}
                                                     </td>
@@ -334,13 +404,30 @@ const Transactions = () => {
                                                         -{formatVND(tx.amount)}
                                                     </td>
                                                     <td className="text-center">
-                                                        <button
-                                                            onClick={() => handleDeleteExpense(tx._id || idx)}
-                                                            className="p-1.5 hover:text-red-500 text-[var(--text-muted)] transition focus:outline-none"
-                                                            aria-label="Xóa chi tiêu"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
+                                                        <div className="flex items-center justify-center gap-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    feedback.tap();
+                                                                    setEditingExpense(tx);
+                                                                }}
+                                                                className="min-w-[32px] min-h-[32px] p-1.5 hover:text-[var(--accent-gold)] text-[var(--text-muted)] transition active:scale-95 flex items-center justify-center"
+                                                                title="Chỉnh sửa giao dịch"
+                                                                aria-label="Chỉnh sửa chi tiêu"
+                                                            >
+                                                                <Edit2 size={13} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    feedback.warning();
+                                                                    setDeletingExpense(tx);
+                                                                }}
+                                                                className="min-w-[32px] min-h-[32px] p-1.5 hover:text-red-500 text-[var(--text-muted)] transition active:scale-95 flex items-center justify-center"
+                                                                title="Xóa giao dịch"
+                                                                aria-label="Xóa chi tiêu"
+                                                            >
+                                                                <Trash2 size={13} />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );
@@ -365,7 +452,7 @@ const Transactions = () => {
                                     const formattedTime = txDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
                                     return (
-                                        <li key={idx} className="p-4 flex items-center justify-between hover:bg-[rgba(var(--accent-gold-rgb),0.02)] transition-colors">
+                                        <li key={tx._id || tx.id || idx} className="p-4 flex items-center justify-between hover:bg-[rgba(var(--accent-gold-rgb),0.02)] transition-colors">
                                             <div className="flex flex-col gap-1 min-w-0 pr-4">
                                                 <span className="font-display font-bold text-xs text-[var(--text-primary)] truncate">
                                                     {tx.purpose}
@@ -380,13 +467,26 @@ const Transactions = () => {
                                                     <span className="font-mono whitespace-nowrap">{formattedDate} {formattedTime}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-3 flex-shrink-0">
-                                                <span className="font-mono font-bold text-xs text-rose-500 whitespace-nowrap">
+                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                <span className="font-mono font-bold text-xs text-rose-500 whitespace-nowrap mr-1">
                                                     -{formatVND(tx.amount)}
                                                 </span>
                                                 <button
-                                                    onClick={() => handleDeleteExpense(tx._id || idx)}
-                                                    className="p-1.5 hover:text-red-500 text-[var(--text-muted)] transition focus:outline-none"
+                                                    onClick={() => {
+                                                        feedback.tap();
+                                                        setEditingExpense(tx);
+                                                    }}
+                                                    className="min-w-[36px] min-h-[36px] p-2 hover:text-[var(--accent-gold)] text-[var(--text-muted)] transition active:scale-95 flex items-center justify-center"
+                                                    aria-label="Chỉnh sửa chi tiêu"
+                                                >
+                                                    <Edit2 size={14} />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        feedback.warning();
+                                                        setDeletingExpense(tx);
+                                                    }}
+                                                    className="min-w-[36px] min-h-[36px] p-2 hover:text-red-500 text-[var(--text-muted)] transition active:scale-95 flex items-center justify-center"
                                                     aria-label="Xóa chi tiêu"
                                                 >
                                                     <Trash2 size={14} />
@@ -423,6 +523,33 @@ const Transactions = () => {
                     </div>
                 )}
             </main>
+
+            <UndoToast
+                isOpen={!!notification}
+                message={notification}
+                lastDeletedItem={lastDeletedExpense}
+                onUndo={handleUndoDelete}
+            />
+
+            <EditExpenseModal
+                isOpen={!!editingExpense}
+                onClose={() => setEditingExpense(null)}
+                expense={editingExpense}
+                onSave={handleSaveEdit}
+                categories={categories}
+                allocations={allocations}
+                formatVND={formatVND}
+                numberToWords={numberToWords}
+            />
+
+            <DeleteExpenseModal
+                isOpen={!!deletingExpense}
+                onClose={() => setDeletingExpense(null)}
+                expense={deletingExpense}
+                onConfirm={handleConfirmDelete}
+                isSubmitting={loading}
+                formatVND={formatVND}
+            />
         </div>
     );
 };

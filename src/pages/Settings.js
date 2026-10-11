@@ -5,10 +5,7 @@ import AccountActions from '../components/Settings/AccountActions';
 import ConfirmModal from '../components/Settings/ConfirmModal';
 import { FinanceContext } from '../contexts/FinanceContext';
 import { API_URL } from '../config';
-
-const haptic = () => {
-  if (window.navigator.vibrate) window.navigator.vibrate(30);
-};
+import feedback from '../utils/feedback';
 
 function Settings() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,13 +16,13 @@ function Settings() {
   const navigate = useNavigate();
 
   const handleToggleTheme = () => {
+    feedback.tap();
     toggleDarkMode();
-    haptic();
   };
 
   const openConfirm = (type) => {
+    feedback.warning();
     setShowConfirm({ type, open: true });
-    haptic();
   };
   const closeConfirm = () => setShowConfirm({ type: null, open: false });
 

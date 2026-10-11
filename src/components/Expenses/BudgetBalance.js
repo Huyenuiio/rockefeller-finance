@@ -1,5 +1,6 @@
 import React from 'react';
-import { Wallet, PlusCircle, LayoutGrid, LayoutList } from 'lucide-react';
+import { Wallet, PlusCircle, Eye, EyeOff } from 'lucide-react';
+import feedback from '../../utils/feedback';
 
 const BudgetBalance = ({
     initialBudget,
@@ -26,15 +27,24 @@ const BudgetBalance = ({
                             </h2>
                         </div>
                         <div className="flex items-center gap-4">
-                            <p className="text-3xl font-mono font-bold text-[var(--text-primary)] tracking-tight cursor-pointer" onClick={() => toggleVisibility('budgetBalance')}>
+                            <p
+                                className="text-3xl font-mono font-bold text-[var(--text-primary)] tracking-tight cursor-pointer"
+                                onClick={() => {
+                                    feedback.tap();
+                                    toggleVisibility('budgetBalance');
+                                }}
+                            >
                                 {visibility.budgetBalance ? formatVND(initialBudget) : '••••••••'}
                             </p>
                             <button
-                                onClick={toggleAllVisibility}
+                                onClick={() => {
+                                    feedback.tap();
+                                    toggleAllVisibility();
+                                }}
                                 className="p-1.5 border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--accent-gold)] transition focus:outline-none"
                                 title={isAnyAmountVisible ? "Ẩn tất cả" : "Hiện tất cả"}
                             >
-                                {isAnyAmountVisible ? <LayoutList size={14} /> : <LayoutGrid size={14} />}
+                                {isAnyAmountVisible ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
                         </div>
                     </div>

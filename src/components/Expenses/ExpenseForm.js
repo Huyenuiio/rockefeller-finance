@@ -1,5 +1,5 @@
 import React from 'react';
-import { Coins, Tag, FileText, MapPin, Calendar, PlusCircle } from 'lucide-react';
+import { Coins, Tag, FileText, MapPin, Calendar, PlusCircle, AlertTriangle } from 'lucide-react';
 
 const ExpenseForm = ({
     handleExpenseSubmit,
@@ -15,6 +15,10 @@ const ExpenseForm = ({
     numberToWords,
     isDarkMode
 }) => {
+    const selectedAlloc = category ? (allocations[category] || 0) : null;
+    const parsedAmount = parseInt(amount, 10) || 0;
+    const isOverBudget = selectedAlloc !== null && parsedAmount > selectedAlloc;
+
     return (
         <div className="bg-[var(--bg-secondary)]">
             <div className="flex items-center gap-3 mb-6">
@@ -41,21 +45,29 @@ const ExpenseForm = ({
                                 const cleanVal = e.target.value.replace(/\D/g, '');
                                 setAmount(cleanVal);
                             }}
-                            className="rockefeller-input font-mono text-xl font-bold py-3"
+                            className={`rockefeller-input font-mono text-xl font-bold py-3 ${isOverBudget ? 'border-red-500 focus:border-red-500' : ''}`}
                             placeholder="0"
                             required
                         />
 
                         {/* Verifying Helper Area */}
-                        {amount && parseInt(amount) > 0 && (
+                        {amount && parsedAmount > 0 && (
                             <div className="mt-2.5 p-3 border border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)] flex flex-col gap-1">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[9px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)]">Xác nhận</span>
                                     <span className="text-xs font-mono font-bold text-[var(--text-primary)]">{formatVND(amount)}</span>
                                 </div>
                                 <p className="text-[10px] font-display text-[var(--accent-gold)] leading-tight uppercase tracking-wider">
-                                    {numberToWords(parseInt(amount))}
+                                    {numberToWords(parsedAmount)}
                                 </p>
+                            </div>
+                        )}
+
+                        {/* Poka-Yoke Constraint Warning */}
+                        {isOverBudget && (
+                            <div className="mt-2 p-2.5 border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-display flex items-center gap-2">
+                                <AlertTriangle size={14} className="shrink-0" />
+                                <span>Vượt quá hạn mức quỹ này (Khả dụng: {formatVND(selectedAlloc)})</span>
                             </div>
                         )}
                     </div>
@@ -76,7 +88,7 @@ const ExpenseForm = ({
                             {categories.map((cat) => (
                                 <option key={cat.value} value={cat.value}>
                                     {cat.label.replace(/\s\(\d+%\)/, '')}
-                                    {allocations[cat.value] > 0 ? ` (${formatVND(allocations[cat.value])})` : ''}
+                                    {allocations[cat.value] > 0 ? ` (${formatVND(allocations[cat.value])})` : ' (0 ₫)'}
                                 </option>
                             ))}
                         </select>
@@ -131,7 +143,7 @@ const ExpenseForm = ({
 
                 <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isOverBudget}
                     className="w-full btn-gold-primary py-3.5 text-xs uppercase tracking-widest font-bold mt-2"
                 >
                     {isSubmitting ? (
@@ -139,6 +151,8 @@ const ExpenseForm = ({
                             <div className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full" />
                             ĐANG XỬ LÝ...
                         </div>
+                    ) : isOverBudget ? (
+                        'KHÔNG ĐỦ SỐ DƯ QUỸ'
                     ) : (
                         'XÁC NHẬN CHI TIÊU'
                     )}

@@ -15,12 +15,18 @@ const DepositModal = ({
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (isOpen && inputRef.current) {
+        if (!isOpen) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        if (inputRef.current) {
             setTimeout(() => {
-                inputRef.current.focus();
+                inputRef.current?.focus();
             }, 100);
         }
-    }, [isOpen]);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
@@ -86,14 +92,14 @@ const DepositModal = ({
                             </div>
 
                             {/* Verifying Helper Area */}
-                            {newBudget && parseInt(newBudget) > 0 && (
+                            {newBudget && parseInt(newBudget, 10) > 0 && (
                                 <div className="mt-3 p-3.5 border border-[var(--border-color)] bg-[rgba(var(--accent-gold-rgb),0.02)] space-y-1">
                                     <div className="flex items-center justify-between">
                                         <span className="text-[9px] font-sans font-bold uppercase tracking-widest text-[var(--text-muted)]">Số tiền xác nhận</span>
                                         <span className="text-xs font-mono font-bold text-[var(--text-primary)]">{formatVND(newBudget)}</span>
                                     </div>
                                     <p className="text-[10px] font-sans text-[var(--accent-gold)] uppercase tracking-widest leading-tight">
-                                        {numberToWords(parseInt(newBudget))}
+                                        {numberToWords(parseInt(newBudget, 10))}
                                     </p>
                                 </div>
                             )}

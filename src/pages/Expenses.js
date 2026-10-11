@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { TrendingDown } from 'lucide-react';
@@ -8,9 +8,14 @@ import AllocationCards from '../components/Expenses/AllocationCards';
 import ExpenseDashboardHeader from '../components/Expenses/ExpenseDashboardHeader';
 import SpendingChart from '../components/Expenses/SpendingChart';
 import DepositModal from '../components/Expenses/DepositModal';
+import EditExpenseModal from '../components/Expenses/EditExpenseModal';
+import DeleteExpenseModal from '../components/Expenses/DeleteExpenseModal';
 import { FinanceContext } from '../contexts/FinanceContext';
 import { categories } from '../constants/categories';
 import { numberToWords } from '../constants/investments';
+import { parseTransactionDate } from '../utils/dateHelpers';
+import { formatVND } from '../utils/formatters';
+import UndoToast from '../components/Common/UndoToast';
 import { API_URL } from '../config';
 
 const initialVisibilityState = categories.reduce((acc, category) => {
@@ -40,6 +45,9 @@ function Expenses() {
   const { isDarkMode } = useContext(FinanceContext);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
+  const [lastDeletedExpense, setLastDeletedExpense] = useState(null);
+  const [editingExpense, setEditingExpense] = useState(null);
+  const [deletingExpense, setDeletingExpense] = useState(null);
   const [visibility, setVisibility] = useState(initialVisibilityState);
   const token = localStorage.getItem('token');
   const snackbarTimeout = useRef(null);
@@ -59,11 +67,17 @@ function Expenses() {
 
 
 
-  const showNotification = (message) => {
+  const showNotification = (message, undoExpense = null) => {
     setSnackbarMsg(message);
+    if (undoExpense) {
+      setLastDeletedExpense(undoExpense);
+    }
     setShowSnackbar(true);
     if (snackbarTimeout.current) clearTimeout(snackbarTimeout.current);
-    snackbarTimeout.current = setTimeout(() => setShowSnackbar(false), 3000);
+    snackbarTimeout.current = setTimeout(() => {
+      setShowSnackbar(false);
+      setLastDeletedExpense(null);
+    }, undoExpense ? 7000 : 3500);
   };
 
   useEffect(() => {
@@ -82,7 +96,10 @@ function Expenses() {
           }),
         ]);
         setInitialBudget(budgetRes.data.initialBudget);
-        setExpenses(expensesRes.data);
+        const expList = Array.isArray(expensesRes.data)
+          ? expensesRes.data
+          : (expensesRes.data?.expenses || []);
+        setExpenses(expList);
         setAllocations(allocationsRes.data);
       } catch (err) {
         showNotification(err.response?.data?.error || 'Lỗi lấy dữ liệu');
@@ -94,10 +111,6 @@ function Expenses() {
     else setIsLoading(false);
   }, [token]);
 
-  const formatVND = (value) => {
-    const num = parseFloat(value) || 0;
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
-  };
 
   const handleBudgetSubmit = async (e) => {
     e.preventDefault();
@@ -172,10 +185,18 @@ function Expenses() {
     }
   };
 
-  const handleDeleteExpense = async (index) => {
+  // Xử lý mở Modal xác nhận xóa
+  const handleDeleteExpense = (expense) => {
+    setDeletingExpense(expense);
+  };
+
+  // Xác nhận xóa thực tế sau khi người dùng đồng ý trong modal
+  const handleConfirmDelete = async (expense) => {
+    if (!expense) return;
+    setIsSubmitting(true);
     try {
       const response = await axios.delete(
-        `${API_URL}/api/expenses/${index}`,
+        `${API_URL}/api/expenses/${expense._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setExpenses(response.data);
@@ -189,10 +210,72 @@ function Expenses() {
       ]);
       setInitialBudget(budgetRes.data.initialBudget);
       setAllocations(allocRes.data);
-      showNotification('Đã xóa chi tiêu!');
+      setDeletingExpense(null);
+      showNotification(`Đã xóa giao dịch "${expense.purpose}"!`, expense);
     } catch (err) {
       showNotification(err.response?.data?.error || 'Lỗi xóa chi tiêu');
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  // Tính năng Hoàn tác (Undo) theo Don Norman
+  const handleUndoDelete = async () => {
+    if (!lastDeletedExpense) return;
+    const expenseToRestore = { ...lastDeletedExpense };
+    setLastDeletedExpense(null);
+    setShowSnackbar(false);
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/expenses`,
+        {
+          amount: expenseToRestore.amount,
+          category: expenseToRestore.category,
+          purpose: expenseToRestore.purpose,
+          location: expenseToRestore.location,
+          date: expenseToRestore.date,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setExpenses(response.data);
+      const [budgetRes, allocRes] = await Promise.all([
+        axios.get(`${API_URL}/api/initial-budget`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/api/allocations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      setInitialBudget(budgetRes.data.initialBudget);
+      setAllocations(allocRes.data);
+      showNotification('Đã hoàn tác và khôi phục giao dịch thành công!');
+    } catch (err) {
+      showNotification('Không thể hoàn tác giao dịch');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Xử lý chỉnh sửa giao dịch (Edit)
+  const handleSaveEdit = async (id, updatedData) => {
+    const response = await axios.put(
+      `${API_URL}/api/expenses/${id}`,
+      updatedData,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setExpenses(response.data);
+    const [budgetRes, allocRes] = await Promise.all([
+      axios.get(`${API_URL}/api/initial-budget`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+      axios.get(`${API_URL}/api/allocations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    ]);
+    setInitialBudget(budgetRes.data.initialBudget);
+    setAllocations(allocRes.data);
+    showNotification('Cập nhật giao dịch thành công!');
   };
 
 
@@ -203,13 +286,22 @@ function Expenses() {
     parseFloat(allocations.charity || 0) +
     parseFloat(allocations.emergency || 0);
 
-  const sortedExpenses = [...expenses];
+  const sortedExpenses = useMemo(() => {
+    return [...(Array.isArray(expenses) ? expenses : [])].sort((a, b) => {
+      const timeA = a?.timestamp ? new Date(a.timestamp).getTime() : parseTransactionDate(a?.date).getTime();
+      const timeB = b?.timestamp ? new Date(b.timestamp).getTime() : parseTransactionDate(b?.date).getTime();
+      return timeB - timeA;
+    });
+  }, [expenses]);
 
   return (
     <div className="min-h-screen transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]" style={{ minHeight: '100vh', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none' }}>
-      <div className={`fixed z-50 left-1/2 -translate-x-1/2 bottom-6 px-5 py-3 border border-[var(--border-color)] bg-black text-white text-xs font-display tracking-wider uppercase transition-all duration-300 ${showSnackbar ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`} role="status" aria-live="polite" style={{ maxWidth: '95vw', width: 'max-content', minWidth: 180 }}>
-        {snackbarMsg}
-      </div>
+      <UndoToast
+        isOpen={showSnackbar}
+        message={snackbarMsg}
+        lastDeletedItem={lastDeletedExpense}
+        onUndo={handleUndoDelete}
+      />
       <header className="sticky top-0 z-40 bg-[var(--bg-secondary)] border-b border-[var(--border-color)] bg-opacity-95 backdrop-blur-md">
         <div className="flex items-center justify-between pl-16 pr-4 py-4 md:px-4 max-w-7xl mx-auto">
           <h1 className="text-lg md:text-xl font-display font-bold tracking-wider text-[var(--accent-gold)] flex items-center gap-3">
@@ -288,7 +380,17 @@ function Expenses() {
                   <button onClick={() => navigate('/transactions')} className="text-xs font-display font-bold tracking-wider uppercase text-[var(--accent-gold)] hover:text-[var(--accent-gold-hover)] flex items-center gap-1">Xem tất cả</button>
                 </div>
                 <div className="border border-[var(--border-color)] bg-[var(--bg-secondary)] overflow-hidden">
-                  <ExpenseHistory sortedExpenses={sortedExpenses.slice(0, 5)} showAllExpenses={false} setShowAllExpenses={() => navigate('/transactions')} handleDeleteExpense={handleDeleteExpense} expenses={expenses} formatVND={formatVND} isDarkMode={isDarkMode} COLLAPSED_COUNT={5} />
+                  <ExpenseHistory
+                    sortedExpenses={sortedExpenses.slice(0, 5)}
+                    showAllExpenses={false}
+                    setShowAllExpenses={() => navigate('/transactions')}
+                    handleDeleteExpense={handleDeleteExpense}
+                    handleEditExpense={(expense) => setEditingExpense(expense)}
+                    expenses={expenses}
+                    formatVND={formatVND}
+                    isDarkMode={isDarkMode}
+                    COLLAPSED_COUNT={5}
+                  />
                 </div>
               </section>
 
@@ -322,6 +424,26 @@ function Expenses() {
         isDarkMode={isDarkMode}
         formatVND={formatVND}
         numberToWords={numberToWords}
+      />
+
+      <EditExpenseModal
+        isOpen={!!editingExpense}
+        onClose={() => setEditingExpense(null)}
+        expense={editingExpense}
+        onSave={handleSaveEdit}
+        categories={categories}
+        allocations={allocations}
+        formatVND={formatVND}
+        numberToWords={numberToWords}
+      />
+
+      <DeleteExpenseModal
+        isOpen={!!deletingExpense}
+        onClose={() => setDeletingExpense(null)}
+        expense={deletingExpense}
+        onConfirm={handleConfirmDelete}
+        isSubmitting={isSubmitting}
+        formatVND={formatVND}
       />
     </div>
   );

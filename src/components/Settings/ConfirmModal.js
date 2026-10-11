@@ -2,6 +2,15 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 const ConfirmModal = ({ showConfirm, isDarkMode, isSubmitting, closeConfirm, handleAction }) => {
+    React.useEffect(() => {
+        if (!showConfirm.open) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') closeConfirm();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showConfirm.open, closeConfirm]);
+
     if (!showConfirm.open) return null;
 
     return (
@@ -9,6 +18,7 @@ const ConfirmModal = ({ showConfirm, isDarkMode, isSubmitting, closeConfirm, han
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200 px-4"
             aria-modal="true"
             role="dialog"
+            onClick={closeConfirm}
         >
             {/* Single Border Clean Modal */}
             <div
